@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GoodChoice - Виртуальный гардероб{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #ff6b8b;
+            --secondary-color: #6c757d;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            padding-top: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+        
+        .navbar-brand i {
+            color: var(--primary-color);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #ff4d73;
+            border-color: #ff4d73;
+        }
+        
+        .rating-stars {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+        
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+        
+        .item-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+        
+        .badge-custom {
+            font-size: 0.8rem;
+            padding: 0.3em 0.6em;
+        }
+        
+        .filter-sidebar {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <!-- Название слева -->
+            <a class="navbar-brand" href="{% url 'wardrobe:home' %}">
+                <i class="bi bi-closet"></i> GoodChoice
+            </a>
+            
+            <!-- Кнопка для мобильной навигации -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <!-- Навигация справа -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'wardrobe:home' %}">
+                            <i class="bi bi-house"></i> Главная
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'wardrobe:wardrobe_list' %}">
+                            <i class="bi bi-closet"></i> Мой гардероб
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'wardrobe:outfit_list' %}">
+                            <i class="bi bi-stars"></i> Мои образы
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'wardrobe:analytics' %}">
+                            <i class="bi bi-graph-up"></i> Аналитика
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <span class="nav-link text-dark">
+                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin:logout' %}">
+                                <i class="bi bi-box-arrow-right"></i> Выйти
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin:login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-5 py-4 bg-white border-top">
+        <div class="container text-center">
+            <p class="mb-0 text-muted">
+                © 2024 GoodChoice - Виртуальный гардероб для стильных решений
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery (для упрощенной работы с модальными окнами) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <script>
+        // Функция для открытия модального окна с вещью/образом
+        function openItemModal(itemId, type) {
+            // Здесь будет AJAX запрос для загрузки данных
+            console.log(`Открыть ${type} с ID: ${itemId}`);
+        }
+        
+        // Функция для применения фильтров
+        function applyFilters(formId) {
+            document.getElementById(formId).submit();
+        }
+        
+        // Функция для сброса фильтров
+        function resetFilters(formId) {
+            const form = document.getElementById(formId);
+            const inputs = form.querySelectorAll('input, select, textarea');
+            inputs.forEach(input => {
+                if (input.type === 'text' || input.type === 'textarea') {
+                    input.value = '';
+                } else if (input.type === 'checkbox' || input.type === 'radio') {
+                    input.checked = false;
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                }
+            });
+            form.submit();
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
