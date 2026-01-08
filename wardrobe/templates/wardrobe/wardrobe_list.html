@@ -1,0 +1,39 @@
+{% extends 'wardrobe/base.html' %}
+
+{% block title %}Мой гардероб - GoodChoice{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Мой гардероб</h1>
+        
+        <div class="row">
+            <div class="col-12 mb-4">
+                <a href="{% url 'wardrobe:add_item' %}" class="btn btn-primary">
+                    Добавить вещь
+                </a>
+            </div>
+            
+            {% for item in items %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.name }}</h5>
+                        <p class="card-text">
+                            <span class="badge bg-primary">{{ item.get_category_display }}</span>
+                            <span class="badge bg-secondary">{{ item.get_color_display }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Гардероб пуст. Добавьте свою первую вещь!
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
