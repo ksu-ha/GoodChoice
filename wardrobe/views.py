@@ -3,6 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count, Avg, Q
 from django.http import JsonResponse
+import plotly.express as px
+import pandas as pd
+from plotly.offline import plot
 
 from .models import ClothingItem, Outfit
 from .forms import ClothingItemForm, OutfitForm
@@ -146,11 +149,50 @@ def analytics(request):
         context = {'has_items': False}
         return render(request, 'wardrobe/analytics.html', context)
     
+    color_data = items.values('color').annotate(count=Count('id')).order_by('-count')
+    color_df = pd.DataFrame(list(color_data))
+    
+    if not color_df.empty:
+        color_fig = px.pie(
+            color_df, 
+            values='count', 
+            names='color',
+            title='Распределение вещей по цветам',
+            color_discrete_map={
+                'red': '#FF0000', 'blue': '#0000FF', 'green': '#00FF00',
+                'black': '#000000', 'white': '#FFFFFF', 'pink': '#FFC0CB',
+                'yellow': '#FFFF00', 'purple': '#800080', 'brown': '#A52A2A',
+                'gray': '#808080', 'beige': '#F5F5DC', 'multicolor': '#FF00FF'
+            }
+        )
+        color_fig.update_traces(textposition='inside', textinfo='percent+label')
+        color_chart = plot(color_fig, output_type='div')
+    else:
+        color_chart = None
+    
+    category_data = items.values('category').annotate(count=Count('id')).order_by('-count')
+    category_df = pd.DataFrame(list(category_data))
+    
+    if not category_df.empty:
+        category_fig = px.bar(
+            category_df,
+            x='category',
+            y='count',
+            title='Количество вещей по категориям',
+            labels={'category': 'Категория', 'count': 'Количество'},
+            color='count',
+            color_continuous_scale='blues'
+        )
+        category_chart = plot(category_fig, output_type='div')
+    else:
+        category_chart = None
+    
     total_items = items.count()
     total_outfits = Outfit.objects.filter(user=request.user).count()
     avg_rating = items.aggregate(avg=Avg('rating'))['avg'] or 0
     
     most_common_color = items.values('color').annotate(count=Count('id')).order_by('-count').first()
+    most_common_category = items.values('category').annotate(count=Count('id')).order_by('-count').first()
     
     context = {
         'has_items': True,
@@ -158,6 +200,9 @@ def analytics(request):
         'total_outfits': total_outfits,
         'avg_rating': round(avg_rating, 1),
         'most_common_color': most_common_color,
+        'most_common_category': most_common_category,
+        'color_chart': color_chart,
+        'category_chart': category_chart,
     }
     return render(request, 'wardrobe/analytics.html', context)
 

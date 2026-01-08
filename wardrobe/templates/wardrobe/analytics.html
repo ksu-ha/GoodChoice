@@ -1,0 +1,151 @@
+{% extends 'wardrobe/base.html' %}
+
+{% block title %}Аналитика - GoodChoice{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-graph-up"></i> Аналитика гардероба</h1>
+            <a href="{% url 'wardrobe:home' %}" class="btn btn-outline-primary">
+                <i class="bi bi-house"></i> На главную
+            </a>
+        </div>
+        
+        {% if not has_items %}
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle"></i> Гардероб пуст</h5>
+            <p class="mb-0">
+                Добавьте вещи в гардероб, чтобы увидеть аналитику.
+                <a href="{% url 'wardrobe:add_item' %}" class="alert-link">Добавить первую вещь</a>
+            </p>
+        </div>
+        {% else %}
+        <div class="row mb-5">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card text-center h-100 border-primary">
+                    <div class="card-body">
+                        <div class="display-6 text-primary mb-2">{{ total_items }}</div>
+                        <h5 class="card-title">Всего вещей</h5>
+                        <p class="card-text small text-muted">В вашем гардеробе</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card text-center h-100 border-success">
+                    <div class="card-body">
+                        <div class="display-6 text-success mb-2">{{ total_outfits }}</div>
+                        <h5 class="card-title">Создано образов</h5>
+                        <p class="card-text small text-muted">Сочетаний вещей</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card text-center h-100 border-warning">
+                    <div class="card-body">
+                        <div class="display-6 text-warning mb-2">{{ avg_rating }}</div>
+                        <h5 class="card-title">Средняя оценка</h5>
+                        <p class="card-text small text-muted">Ваших вещей</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card text-center h-100 border-info">
+                    <div class="card-body">
+                        <div class="display-6 text-info mb-2">
+                            {% if most_common_color %}
+                                {{ most_common_color.get_color_display }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                        <h5 class="card-title">Популярный цвет</h5>
+                        <p class="card-text small text-muted">В гардеробе</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-5">
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-palette"></i> Распределение по цветам</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if color_chart %}
+                            {{ color_chart|safe }}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-pie-chart text-muted display-4"></i>
+                                <p class="mt-3 text-muted">Нет данных для графика</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-grid"></i> Распределение по категориям</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if category_chart %}
+                            {{ category_chart|safe }}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-bar-chart text-muted display-4"></i>
+                                <p class="mt-3 text-muted">Нет данных для графика</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Рекомендации</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-check-circle text-success"></i> Что хорошо:</h6>
+                        <ul>
+                            {% if total_items >= 20 %}
+                            <li>У вас достаточно вещей для создания разнообразных образов</li>
+                            {% endif %}
+                            {% if avg_rating >= 4 %}
+                            <li>Вы в основном добавляете вещи, которые вам нравятся (высокая средняя оценка)</li>
+                            {% endif %}
+                            {% if total_outfits >= 5 %}
+                            <li>Вы активно создаете образы - это помогает лучше использовать гардероб</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-exclamation-triangle text-warning"></i> На что обратить внимание:</h6>
+                        <ul>
+                            {% if total_items < 10 %}
+                            <li>В гардеробе мало вещей. Добавьте базовые элементы</li>
+                            {% endif %}
+                            {% if most_common_color and most_common_color.count > total_items|divisibleby:"2" %}
+                            <li>Преобладает один цвет ({{ most_common_color.get_color_display }}). Попробуйте добавить другие цвета</li>
+                            {% endif %}
+                            {% if total_outfits == 0 %}
+                            <li>Вы еще не создали ни одного образа. Попробуйте собрать первый!</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
