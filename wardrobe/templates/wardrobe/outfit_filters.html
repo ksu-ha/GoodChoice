@@ -1,0 +1,22 @@
+<form method="get" id="outfitFilterForm">
+    <div class="mb-3">
+        <label class="form-label">Тип мероприятия</label>
+        <select name="occasion" class="form-select">
+            <option value="">Все мероприятия</option>
+            <option value="office" {% if current_filters.occasion == 'office' %}selected{% endif %}>В офис</option>
+            <option value="home" {% if current_filters.occasion == 'home' %}selected{% endif %}>Для дома</option>
+            <option value="walk" {% if current_filters.occasion == 'walk' %}selected{% endif %}>На прогулку</option>
+            <option value="party" {% if current_filters.occasion == 'party' %}selected{% endif %}>На праздник</option>
+            <option value="any" {% if current_filters.occasion == 'any' %}selected{% endif %}>Любой</option>
+        </select>
+    </div>
+    
+    <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-circle"></i> Применить фильтры
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="resetFilters('outfitFilterForm')">
+            <i class="bi bi-x-circle"></i> Сбросить фильтры
+        </button>
+    </div>
+</form>

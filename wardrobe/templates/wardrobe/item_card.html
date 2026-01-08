@@ -26,6 +26,13 @@
                     {% endif %}
                 {% endfor %}
             </div>
+            
+            <p class="card-text small text-muted mb-1">
+                <i class="bi bi-calendar"></i> {{ item.created_at|date:"d.m.Y" }}
+            </p>
+            <p class="card-text small text-muted">
+                <i class="bi bi-briefcase"></i> {{ item.get_occasion_display }}
+            </p>
         </div>
     </div>
 </div>

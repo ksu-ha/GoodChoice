@@ -5,13 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}GoodChoice - Виртуальный гардероб{% endblock %}</title>
     
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
-    <!-- Custom CSS -->
     <style>
         :root {
             --primary-color: #ff6b8b;
@@ -62,15 +58,6 @@
             font-size: 1.2rem;
         }
         
-        .modal-backdrop {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        
-        .modal-content {
-            border-radius: 15px;
-            border: none;
-        }
-        
         .item-image {
             width: 100%;
             height: 200px;
@@ -89,44 +76,21 @@
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1040;
-        }
-
-        .modal-xl {
-            max-width: 1200px;
-        }
-
-        .badge-sm {
-            font-size: 0.7rem;
-            padding: 0.2em 0.4em;
-        }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Навигация -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
-            <!-- Название слева -->
             <a class="navbar-brand" href="{% url 'wardrobe:home' %}">
                 <i class="bi bi-closet"></i> GoodChoice
             </a>
             
-            <!-- Кнопка для мобильной навигации -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
-            <!-- Навигация справа -->
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
@@ -172,7 +136,6 @@
         </div>
     </nav>
 
-    <!-- Основной контент -->
     <main class="container mt-4">
         {% if messages %}
             {% for message in messages %}
@@ -187,34 +150,22 @@
         {% endblock %}
     </main>
 
-    <!-- Footer -->
     <footer class="mt-5 py-4 bg-white border-top">
         <div class="container text-center">
             <p class="mb-0 text-muted">
-                © 2026 GoodChoice - Виртуальный гардероб для стильных решений
+                © 2024 GoodChoice - Виртуальный гардероб для стильных решений
             </p>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- jQuery (для упрощенной работы с модальными окнами) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
-        // Функция для открытия модального окна с вещью/образом
-        function openItemModal(itemId, type) {
-            // Здесь будет AJAX запрос для загрузки данных
-            console.log(`Открыть ${type} с ID: ${itemId}`);
-        }
-        
-        // Функция для применения фильтров
         function applyFilters(formId) {
             document.getElementById(formId).submit();
         }
         
-        // Функция для сброса фильтров
         function resetFilters(formId) {
             const form = document.getElementById(formId);
             const inputs = form.querySelectorAll('input, select, textarea');

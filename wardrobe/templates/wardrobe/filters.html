@@ -3,12 +3,12 @@
         <label class="form-label">Категория</label>
         <select name="category" class="form-select">
             <option value="">Все категории</option>
-            <option value="top">Верх</option>
-            <option value="bottom">Низ</option>
-            <option value="outer">Верхняя одежда</option>
-            <option value="dress">Костюм/Платье</option>
-            <option value="shoes">Обувь</option>
-            <option value="accessory">Аксессуары</option>
+            <option value="top" {% if current_filters.category == 'top' %}selected{% endif %}>Верх</option>
+            <option value="bottom" {% if current_filters.category == 'bottom' %}selected{% endif %}>Низ</option>
+            <option value="outer" {% if current_filters.category == 'outer' %}selected{% endif %}>Верхняя одежда</option>
+            <option value="dress" {% if current_filters.category == 'dress' %}selected{% endif %}>Костюм/Платье</option>
+            <option value="shoes" {% if current_filters.category == 'shoes' %}selected{% endif %}>Обувь</option>
+            <option value="accessory" {% if current_filters.category == 'accessory' %}selected{% endif %}>Аксессуары</option>
         </select>
     </div>
     
@@ -16,24 +16,27 @@
         <label class="form-label">Цвет</label>
         <select name="color" class="form-select">
             <option value="">Все цвета</option>
-            <option value="red">Красный</option>
-            <option value="blue">Синий</option>
-            <option value="green">Зеленый</option>
-            <option value="black">Черный</option>
-            <option value="white">Белый</option>
-            <option value="pink">Розовый</option>
-            <option value="yellow">Желтый</option>
-            <option value="purple">Фиолетовый</option>
-            <option value="brown">Коричневый</option>
-            <option value="gray">Серый</option>
-            <option value="beige">Бежевый</option>
-            <option value="multicolor">Разноцветный</option>
+            <option value="red" {% if current_filters.color == 'red' %}selected{% endif %}>Красный</option>
+            <option value="blue" {% if current_filters.color == 'blue' %}selected{% endif %}>Синий</option>
+            <option value="green" {% if current_filters.color == 'green' %}selected{% endif %}>Зеленый</option>
+            <option value="black" {% if current_filters.color == 'black' %}selected{% endif %}>Черный</option>
+            <option value="white" {% if current_filters.color == 'white' %}selected{% endif %}>Белый</option>
+            <option value="pink" {% if current_filters.color == 'pink' %}selected{% endif %}>Розовый</option>
+            <option value="yellow" {% if current_filters.color == 'yellow' %}selected{% endif %}>Желтый</option>
+            <option value="purple" {% if current_filters.color == 'purple' %}selected{% endif %}>Фиолетовый</option>
+            <option value="brown" {% if current_filters.color == 'brown' %}selected{% endif %}>Коричневый</option>
+            <option value="gray" {% if current_filters.color == 'gray' %}selected{% endif %}>Серый</option>
+            <option value="beige" {% if current_filters.color == 'beige' %}selected{% endif %}>Бежевый</option>
+            <option value="multicolor" {% if current_filters.color == 'multicolor' %}selected{% endif %}>Разноцветный</option>
         </select>
     </div>
     
     <div class="d-grid gap-2">
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-check-circle"></i> Применить фильтры
+        </button>
+        <button type="button" class="btn btn-outline-secondary" onclick="resetFilters('filterForm')">
+            <i class="bi bi-x-circle"></i> Сбросить фильтры
         </button>
     </div>
 </form>
