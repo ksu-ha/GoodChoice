@@ -1,0 +1,47 @@
+<div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+    <div class="card h-100 outfit-card" data-outfit-id="{{ outfit.id }}" style="cursor: pointer;">
+        <div class="card-img-top item-image position-relative" style="height: 220px; overflow: hidden; align-items: center; justify-content: center;" >
+            {% if outfit.items.all %}
+                <div class="row h-100 g-0">
+                    {% for item in outfit.items.all|slice:":4" %}
+                    <div class="col-6">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ item.name }}">
+                        {% else %}
+                        <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center">
+                            <i class="bi bi-image text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if outfit.items.count > 4 %}
+                <div class="position-absolute top-0 end-0 bg-dark text-white p-2 rounded-bottom-start">
+                    +{{ outfit.items.count|add:"-4" }}
+                </div>
+                {% endif %}
+            {% else %}
+            <div class="h-100 bg-light d-flex align-items-center justify-content-center">
+                <i class="bi bi-stack text-primary display-4"></i>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="card-body p-2">
+            <h6 class="card-title mb-1">{{ outfit.name|truncatechars:15 }}</h6>
+            <span class="badge bg-primary mb-1">{{ outfit.get_occasion_display }}</span>
+            <div class="rounded-top-end">
+                {{ outfit.items.count }} вещей
+            </div>
+            <div class="rating-stars small">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= outfit.rating %}
+                        ★
+                    {% else %}
+                        ☆
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
