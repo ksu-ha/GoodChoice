@@ -15,8 +15,12 @@ def home(request):
     if request.user.is_authenticated:
         total_items = ClothingItem.objects.filter(user=request.user).count()
         total_outfits = Outfit.objects.filter(user=request.user).count()
-        recent_items = ClothingItem.objects.filter(user=request.user).order_by('-created_at')[:4]
-        recent_outfits = Outfit.objects.filter(user=request.user).order_by('-created_at')[:4]
+
+        recent_items = ClothingItem.objects.filter(user=request.user) \
+            .order_by('-created_at')[:4]
+        
+        recent_outfits = Outfit.objects.filter(user=request.user) \
+            .order_by('-created_at')[:4]
     else:
         total_items = 0
         total_outfits = 0
