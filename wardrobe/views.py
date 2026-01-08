@@ -284,3 +284,13 @@ def get_outfit_detail(request, outfit_id):
             'color_stats': color_stats,
         }
     })
+
+
+def item_modal_view(request, item_id):
+    item = get_object_or_404(ClothingItem, id=item_id)
+    return render(request, 'wardrobe/item_modal.html', {'item': item})
+
+
+def outfit_modal_view(request, outfit_id):
+    outfit = get_object_or_404(Outfit, id=outfit_id)
+    return render(request, 'wardrobe/outfit_modal.html', {'outfit': outfit})

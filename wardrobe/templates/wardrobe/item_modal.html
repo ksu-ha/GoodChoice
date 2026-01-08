@@ -1,0 +1,38 @@
+<div class="modal-header">
+    <h5 class="modal-title">{{ item.name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-5">
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="img-fluid rounded" alt="{{ item.name }}">
+            {% else %}
+            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                <i class="bi bi-image text-muted display-4"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-7">
+            <p><strong>Категория:</strong> {{ item.get_category_display }}</p>
+            <p><strong>Цвет:</strong> {{ item.get_color_display }}</p>
+            <p><strong>Сезоны:</strong> {{ item.get_seasons_display }}</p>
+            <p><strong>Тип мероприятия:</strong> {{ item.get_occasion_display }}</p>
+            <p><strong>Оценка:</strong> 
+                <span class="rating-stars">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= item.rating %}
+                            ★
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </span>
+            </p>
+            {% if item.description %}
+            <p><strong>Описание:</strong> {{ item.description }}</p>
+            {% endif %}
+            <p class="text-muted small"><i class="bi bi-calendar"></i> Добавлена: {{ item.created_at|date:"d.m.Y" }}</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+<div class="modal-header">
+    <h5 class="modal-title">{{ outfit.name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <p><strong>Тип мероприятия:</strong> <span class="badge bg-success">{{ outfit.get_occasion_display }}</span></p>
+            <p><strong>Оценка:</strong> 
+                <span class="rating-stars">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= outfit.rating %}
+                            ★
+                        {% else %}
+                            ☆
+                        {% endif %}
+                    {% endfor %}
+                </span>
+            </p>
+            
+            {% if outfit.description %}
+            <p><strong>Описание:</strong> {{ outfit.description }}</p>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <p class="text-muted small">
+                <i class="bi bi-calendar"></i> Создан: {{ outfit.created_at|date:"d.m.Y" }}
+            </p>
+        </div>
+    </div>
+    
+    <h6 class="mt-3">Вещи в образе ({{ outfit.items.count }}):</h6>
+    
+    <div class="row mt-2">
+        {% for item in outfit.items.all %}
+            {% include 'wardrobe/item_card.html' with item=item %}
+        {% endfor %}
+    </div>
+</div>

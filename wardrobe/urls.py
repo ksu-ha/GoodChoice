@@ -12,4 +12,6 @@ urlpatterns = [
     path('outfits/create/', views.create_outfit, name='create_outfit'),
     path('outfits/outfit/<int:outfit_id>/', views.get_outfit_detail, name='outfit_detail'),
     path('analytics/', views.analytics, name='analytics'),
+    path('item/<int:item_id>/modal/', views.item_modal_view, name='item_modal'),
+    path('outfit/<int:outfit_id>/modal/', views.outfit_modal_view, name='outfit_modal'),
 ]

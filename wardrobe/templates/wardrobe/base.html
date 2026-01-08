@@ -185,5 +185,71 @@
     </script>
     
     {% block extra_js %}{% endblock %}
+    
+    <div class="modal fade" id="simpleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="simpleModalContent">
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+
+<script>
+$(document).ready(function() {
+    let simpleModal = null;
+    
+    function getModal() {
+        if (!simpleModal) {
+            const modalElement = document.getElementById('simpleModal');
+            if (modalElement) {
+                simpleModal = new bootstrap.Modal(modalElement);
+            }
+        }
+        return simpleModal;
+    }
+    
+    function loadModalContent(url) {
+        const modal = getModal();
+        if (!modal) return;
+        
+        $('#simpleModalContent').html(`
+            <div class="modal-header">
+                <h5 class="modal-title">Загрузка...</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-3">Загрузка...</p>
+            </div>
+        `);
+        
+        modal.show();
+        
+        $('#simpleModalContent').load(url, function(response, status, xhr) {
+            if (status === "error") {
+                console.error("Ошибка загрузки:", xhr.status, xhr.statusText);
+                $('#simpleModalContent').html(`
+                    <div class="modal-header">
+                        <h5 class="modal-title">Ошибка</h5>
+                    </div>
+                `);
+            }
+        });
+    }
+    
+    $(document).on('click', '.item-card[data-item-id]', function(e) {
+        e.preventDefault();
+        const itemId = $(this).data('item-id');
+        loadModalContent('/item/' + itemId + '/modal/');
+    });
+
+    $(document).on('click', '.outfit-card[data-outfit-id]', function(e) {
+        e.preventDefault();
+        const outfitId = $(this).data('outfit-id');
+        loadModalContent('/outfit/' + outfitId + '/modal/');
+    });
+});
+</script>
