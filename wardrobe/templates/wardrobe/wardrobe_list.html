@@ -2,37 +2,57 @@
 
 {% block title %}Мой гардероб - GoodChoice{% endblock %}
 
+{% block extra_css %}
+<style>
+    .color-badge[data-color="red"] { background-color: #FF0000 !important; color: white !important; }
+    .color-badge[data-color="blue"] { background-color: #0000FF !important; color: white !important; }
+    .color-badge[data-color="green"] { background-color: #00FF00 !important; color: black !important; }
+    .color-badge[data-color="black"] { background-color: #000000 !important; color: white !important; }
+    .color-badge[data-color="white"] { background-color: #FFFFFF !important; color: black !important; border: 1px solid #ccc !important; }
+    .color-badge[data-color="pink"] { background-color: #FFC0CB !important; color: black !important; }
+    .color-badge[data-color="yellow"] { background-color: #FFFF00 !important; color: black !important; }
+    .color-badge[data-color="purple"] { background-color: #800080 !important; color: white !important; }
+    .color-badge[data-color="brown"] { background-color: #A52A2A !important; color: white !important; }
+    .color-badge[data-color="gray"] { background-color: #808080 !important; color: white !important; }
+    .color-badge[data-color="beige"] { background-color: #F5F5DC !important; color: black !important; }
+    .color-badge[data-color="multicolor"] { 
+        background: linear-gradient(45deg, #FF0000, #00FF00, #0000FF) !important;
+        color: white !important; 
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">Мой гардероб</h1>
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-closet"></i> Мой гардероб</h1>
+            <a href="{% url 'wardrobe:add_item' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Добавить вещь
+            </a>
+        </div>
         
         <div class="row">
-            <div class="col-12 mb-4">
-                <a href="{% url 'wardrobe:add_item' %}" class="btn btn-primary">
-                    Добавить вещь
-                </a>
-            </div>
-            
             {% for item in items %}
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ item.name }}</h5>
-                        <p class="card-text">
-                            <span class="badge bg-primary">{{ item.get_category_display }}</span>
-                            <span class="badge bg-secondary">{{ item.get_color_display }}</span>
-                        </p>
-                    </div>
-                </div>
-            </div>
+                {% include 'wardrobe/item_card.html' %}
             {% empty %}
             <div class="col-12">
                 <div class="alert alert-info">
-                    Гардероб пуст. Добавьте свою первую вещь!
+                    <h5><i class="bi bi-info-circle"></i> Гардероб пуст</h5>
+                    <p class="mb-0">
+                        Добавьте свою первую вещь в гардероб!
+                        <a href="{% url 'wardrobe:add_item' %}" class="alert-link">Добавить вещь</a>
+                    </p>
                 </div>
             </div>
             {% endfor %}
+        </div>
+    </div>
+    
+    <div class="col-lg-3">
+        <div class="filter-sidebar">
+            <h5 class="mb-4"><i class="bi bi-funnel"></i> Фильтры</h5>
+            {% include 'wardrobe/filters.html' %}
         </div>
     </div>
 </div>
