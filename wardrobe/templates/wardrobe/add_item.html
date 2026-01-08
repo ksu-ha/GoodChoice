@@ -69,7 +69,7 @@
                             
                             <div class="mb-3">
                                 <label class="form-label fw-bold">
-                                    <i class="bi bi-sun"></i> Сезоны
+                                    <i class="bi bi-sun"></i> {{ form.season.label }}
                                 </label>
                                 <div class="border rounded p-3">
                                     {% for value, label in form.fields.season.choices %}
@@ -116,9 +116,25 @@
                 </form>
             </div>
         </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Советы по добавлению</h5>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>Фото:</strong> Делайте на однотонном фоне при хорошем освещении</li>
+                    <li><strong>Название:</strong> Указывайте конкретно (например, "Синие джинсы Levi's")</li>
+                    <li><strong>Сезон:</strong> Если вещь можно носить круглый год, отметьте все сезоны</li>
+                    <li><strong>Оценка:</strong> Помогает системе лучше подбирать вещи, которые вам нравятся</li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
     document.querySelector('form').addEventListener('submit', function(e) {
         const nameField = document.getElementById('{{ form.name.id_for_label }}');
