@@ -10,12 +10,6 @@
         
         <div class="card-body">
             <h5 class="card-title">{{ item.name }}</h5>
-            <p class="card-text">
-                <span class="badge bg-primary mb-1">{{ item.get_category_display }}</span>
-                <span class="badge color-badge mb-1" data-color="{{ item.color }}">
-                    {{ item.get_color_display }}
-                </span>
-            </p>
             
             <div class="rating-stars mb-2">
                 {% for i in "12345" %}

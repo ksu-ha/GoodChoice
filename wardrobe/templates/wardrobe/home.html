@@ -1,0 +1,430 @@
+{% extends 'wardrobe/base.html' %}
+
+{% block title %}Главная - GoodChoice{% endblock %}
+
+{% block extra_css %}
+<style>
+    .color-badge[data-color="red"] { background-color: #FF0000 !important; color: white !important; }
+    .color-badge[data-color="blue"] { background-color: #0000FF !important; color: white !important; }
+    .color-badge[data-color="green"] { background-color: #00FF00 !important; color: black !important; }
+    .color-badge[data-color="black"] { background-color: #000000 !important; color: white !important; }
+    .color-badge[data-color="white"] { background-color: #FFFFFF !important; color: black !important; border: 1px solid #ccc !important; }
+    .color-badge[data-color="pink"] { background-color: #FFC0CB !important; color: black !important; }
+    .color-badge[data-color="yellow"] { background-color: #FFFF00 !important; color: black !important; }
+    .color-badge[data-color="purple"] { background-color: #800080 !important; color: white !important; }
+    .color-badge[data-color="brown"] { background-color: #A52A2A !important; color: white !important; }
+    .color-badge[data-color="gray"] { background-color: #808080 !important; color: white !important; }
+    .color-badge[data-color="beige"] { background-color: #F5F5DC !important; color: black !important; }
+    .color-badge[data-color="multicolor"] { 
+        background: linear-gradient(45deg, #FF0000, #00FF00, #0000FF) !important;
+        color: white !important; 
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Левая колонка: Недавно добавленные вещи и образы -->
+    <div class="col-lg-8">
+        <h1 class="mb-4">Добро пожаловать в GoodChoice!</h1>
+        <p class="lead">Ваш персональный виртуальный гардероб, который помнит все вещи и подбирает идеальные образы.</p>
+        
+        <!-- Недавно добавленные вещи -->
+        {% if recent_items %}
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="mb-4"><i class="bi bi-clock-history"></i> Недавно добавленные вещи</h3>
+                <div class="row">
+                    {% for item in recent_items %}
+                        {% include 'wardrobe/item_card.html' with item=item col_size='3' %}
+                    {% endfor %}
+                </div>
+                {% if total_items > 4 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'wardrobe:wardrobe_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-right"></i> Посмотреть все вещи ({{ total_items }})
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Недавно добавленные образы -->
+        {% if recent_outfits %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <h3 class="mb-4"><i class="bi bi-stars"></i> Недавно созданные образы</h3>
+                <div class="row">
+                    {% for outfit in recent_outfits %}
+                    <div class="col-lg-3 col-md-6 col-sm-6 mb-3">
+                        <div class="card h-100 outfit-card" data-outfit-id="{{ outfit.id }}" data-type="outfit">
+                            <div class="card-img-top item-image bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                                <i class="bi bi-stack text-primary display-4"></i>
+                                <small class="position-absolute bottom-0 end-0 bg-dark text-white p-1 rounded">
+                                    {{ outfit.items.count }} вещей
+                                </small>
+                            </div>
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-1">{{ outfit.name|truncatechars:15 }}</h6>
+                                <span class="badge bg-success badge-custom mb-1">{{ outfit.get_occasion_display }}</span>
+                                <div class="rating-stars small">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= outfit.rating %}
+                                            ★
+                                        {% else %}
+                                            ☆
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if total_outfits > 4 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-right"></i> Посмотреть все образы ({{ total_outfits }})
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Правая колонка: Быстрые действия и статистика -->
+    <div class="col-lg-4">
+        <!-- Упрощенные быстрые действия -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Быстрые действия</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="{% url 'wardrobe:add_item' %}" class="btn btn-primary btn-lg quick-action-btn fs-6">
+                        <i class="bi bi-plus-circle me-2"></i> Добавить вещь
+                    </a>
+                    
+                    <a href="{% url 'wardrobe:create_outfit' %}" class="btn btn-primary btn-lg quick-action-btn fs-6">
+                        <i class="bi bi-stars me-2"></i> Создать образ
+                    </a>
+                    
+                    <a href="{% url 'wardrobe:wardrobe_list' %}" class="btn btn-primary btn-lg quick-action-btn fs-6">
+                        <i class="bi bi-search me-2"></i> Найти вещи
+                    </a>
+                    
+                    <a href="{% url 'wardrobe:outfit_list' %}" class="btn btn-primary btn-lg quick-action-btn fs-6">
+                        <i class="bi bi-collection me-2"></i> Мои образы
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика гардероба</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Всего вещей:</span>
+                    <strong class="text-primary">{{ total_items }}</strong>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Всего образов:</span>
+                    <strong class="text-primary">{{ total_outfits }}</strong>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'wardrobe:analytics' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-graph-up"></i> Аналитика
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно -->
+<div class="modal fade" id="itemModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Детали</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Открытие модального окна при клике на карточку вещи
+    $(document).ready(function() {
+        $('.item-card').click(function() {
+            const itemId = $(this).data('item-id');
+            
+            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+            modal.show();
+            
+            $('#modalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-3">Загрузка деталей вещи...</p>
+                </div>
+            `);
+            
+            // AJAX запрос для получения деталей вещи
+            $.ajax({
+                url: '/wardrobe/item/' + itemId + '/',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const item = response.item;
+                        
+                        let html = `
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <div class="text-center">
+                        `;
+                        
+                        if (item.image_url) {
+                            html += `<img src="${item.image_url}" class="img-fluid rounded mb-3" style="max-height: 300px;" alt="${item.name}">`;
+                        } else {
+                            html += `
+                                <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 200px;">
+                                    <i class="bi bi-image text-muted display-4"></i>
+                                </div>
+                            `;
+                        }
+                        
+                        html += `
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <h4>${item.name}</h4>
+                                    <p class="text-muted">${item.description}</p>
+                                    
+                                    <div class="mb-3">
+                                        <h6><i class="bi bi-grid"></i> Категория</h6>
+                                        <span class="badge bg-primary">${item.category}</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6><i class="bi bi-palette"></i> Цвет</h6>
+                                        <span class="badge color-badge" data-color="${item.color_code}">${item.color}</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6><i class="bi bi-sun"></i> Сезоны</h6>
+                                        <p>${item.seasons}</p>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6><i class="bi bi-calendar-event"></i> Тип мероприятия</h6>
+                                        <span class="badge bg-info">${item.occasion}</span>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6><i class="bi bi-star"></i> Оценка</h6>
+                                        <div class="rating-stars fs-4">
+                        `;
+                        
+                        for (let i = 1; i <= 5; i++) {
+                            if (i <= item.rating) {
+                                html += '★';
+                            } else {
+                                html += '☆';
+                            }
+                        }
+                        
+                        html += `
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <h6><i class="bi bi-clock-history"></i> Использование</h6>
+                                        <p>Использована в ${item.used_in_outfits} образах</p>
+                                    </div>
+                                    
+                                    <div class="mt-4 text-muted small">
+                                        <p><i class="bi bi-calendar-plus"></i> Добавлена: ${item.created_at}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        $('#modalBody').html(html);
+                        
+                        
+                    } else {
+                        $('#modalBody').html(`
+                            <div class="alert alert-danger">
+                                <h5>Ошибка</h5>
+                                <p>Не удалось загрузить информацию о вещи</p>
+                            </div>
+                        `);
+                    }
+                },
+                error: function() {
+                    $('#modalBody').html(`
+                        <div class="alert alert-danger">
+                            <h5>Ошибка</h5>
+                            <p>Не удалось загрузить информацию о вещи</p>
+                        </div>
+                    `);
+                }
+            });
+        });
+        
+        $('.outfit-card').click(function() {
+            const outfitId = $(this).data('outfit-id');
+            
+            const modal = new bootstrap.Modal(document.getElementById('itemModal'));
+            modal.show();
+            
+            $('#modalBody').html(`
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Загрузка...</span>
+                    </div>
+                    <p class="mt-3">Загрузка деталей образа...</p>
+                </div>
+            `);
+            
+            // AJAX запрос для получения деталей образа
+            $.ajax({
+                url: '/outfits/outfit/' + outfitId + '/',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        const outfit = response.outfit;
+                        
+                        let html = `
+                            <div class="row">
+                                <div class="col-12">
+                                    <h4>${outfit.name}</h4>
+                                    <p class="text-muted">${outfit.description}</p>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <h6><i class="bi bi-calendar-event"></i> Тип мероприятия</h6>
+                                                <span class="badge bg-success">${outfit.occasion}</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <h6><i class="bi bi-star"></i> Оценка</h6>
+                                                <div class="rating-stars fs-4">
+                        `;
+                        
+                        for (let i = 1; i <= 5; i++) {
+                            if (i <= outfit.rating) {
+                                html += '★';
+                            } else {
+                                html += '☆';
+                            }
+                        }
+                        
+                        html += `
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <h6><i class="bi bi-box"></i> Статистика</h6>
+                                                <p>Всего вещей: <strong>${outfit.total_items}</strong></p>
+                                                <p>Создан: <strong>${outfit.created_at}</strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <h5><i class="bi bi-closet"></i> Вещи в образе (${outfit.total_items})</h5>
+                                        <div class="row">
+                        `;
+                        
+                        if (outfit.items && outfit.items.length > 0) {
+                            outfit.items.forEach(function(item) {
+                                html += `
+                                    <div class="col-md-4 col-sm-6 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body text-center">
+                                                ${item.image_url ? 
+                                                    `<img src="${item.image_url}" class="img-fluid rounded mb-2" style="max-height: 100px;" alt="${item.name}">` : 
+                                                    `<div class="bg-light rounded d-flex align-items-center justify-content-center mb-2" style="height: 100px;">
+                                                        <i class="bi bi-image text-muted"></i>
+                                                    </div>`
+                                                }
+                                                <h6 class="mb-1">${item.name}</h6>
+                                                <span class="badge bg-secondary badge-sm">${item.category}</span>
+                                                <div class="rating-stars small">
+                                `;
+                                
+                                for (let i = 1; i <= 5; i++) {
+                                    if (i <= item.rating) {
+                                        html += '★';
+                                    } else {
+                                        html += '☆';
+                                    }
+                                }
+                                
+                                html += `
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            html += `
+                                <div class="col-12">
+                                    <div class="alert alert-warning">
+                                        В образе нет вещей
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        html += `
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        $('#modalBody').html(html);
+                    } else {
+                        $('#modalBody').html(`
+                            <div class="alert alert-danger">
+                                <h5>Ошибка</h5>
+                                <p>Не удалось загрузить информацию об образе</p>
+                            </div>
+                        `);
+                    }
+                },
+                error: function() {
+                    $('#modalBody').html(`
+                        <div class="alert alert-danger">
+                            <h5>Ошибка</h5>
+                            <p>Не удалось загрузить информацию об образе</p>
+                        </div>
+                    `);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
