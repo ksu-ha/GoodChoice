@@ -1,4 +1,5 @@
 <form method="get" id="filterForm">
+    <!-- Категория -->
     <div class="mb-3">
         <label class="form-label">Категория</label>
         <select name="category" class="form-select">
@@ -12,6 +13,7 @@
         </select>
     </div>
     
+    <!-- Цвет -->
     <div class="mb-3">
         <label class="form-label">Цвет</label>
         <select name="color" class="form-select">
@@ -31,6 +33,56 @@
         </select>
     </div>
     
+    <!-- Сезон -->
+    <div class="mb-3">
+        <label class="form-label">Сезон</label>
+        <select name="season" class="form-select">
+            <option value="">Все сезоны</option>
+            <option value="winter" {% if current_filters.season == 'winter' %}selected{% endif %}>Зима</option>
+            <option value="spring" {% if current_filters.season == 'spring' %}selected{% endif %}>Весна</option>
+            <option value="summer" {% if current_filters.season == 'summer' %}selected{% endif %}>Лето</option>
+            <option value="autumn" {% if current_filters.season == 'autumn' %}selected{% endif %}>Осень</option>
+        </select>
+    </div>
+    
+    <!-- Тип мероприятия -->
+    <div class="mb-3">
+        <label class="form-label">Тип мероприятия</label>
+        <select name="occasion" class="form-select">
+            <option value="">Все мероприятия</option>
+            <option value="office" {% if current_filters.occasion == 'office' %}selected{% endif %}>В офис</option>
+            <option value="home" {% if current_filters.occasion == 'home' %}selected{% endif %}>Для дома</option>
+            <option value="walk" {% if current_filters.occasion == 'walk' %}selected{% endif %}>На прогулку</option>
+            <option value="party" {% if current_filters.occasion == 'party' %}selected{% endif %}>На праздник</option>
+            <option value="any" {% if current_filters.occasion == 'any' %}selected{% endif %}>Любой</option>
+        </select>
+    </div>
+    
+    <!-- Оценка -->
+    <div class="mb-3">
+        <label class="form-label">Минимальная оценка</label>
+        <select name="min_rating" class="form-select">
+            <option value="">Любая</option>
+            <option value="3" {% if current_filters.min_rating == '3' %}selected{% endif %}>3 ★ и выше</option>
+            <option value="4" {% if current_filters.min_rating == '4' %}selected{% endif %}>4 ★ и выше</option>
+            <option value="5" {% if current_filters.min_rating == '5' %}selected{% endif %}>Только 5 ★</option>
+        </select>
+    </div>
+    
+    <!-- Дата -->
+    <div class="mb-4">
+        <label class="form-label">Дата добавления</label>
+        <div class="input-group mb-2">
+            <span class="input-group-text">От</span>
+            <input type="date" name="date_from" class="form-control" value="{{ current_filters.date_from }}">
+        </div>
+        <div class="input-group">
+            <span class="input-group-text">До</span>
+            <input type="date" name="date_to" class="form-control" value="{{ current_filters.date_to }}">
+        </div>
+    </div>
+    
+    <!-- Кнопки -->
     <div class="d-grid gap-2">
         <button type="submit" class="btn btn-primary">
             <i class="bi bi-check-circle"></i> Применить фильтры
