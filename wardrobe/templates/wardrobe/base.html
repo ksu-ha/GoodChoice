@@ -89,6 +89,25 @@
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1040;
+        }
+
+        .modal-xl {
+            max-width: 1200px;
+        }
+
+        .badge-sm {
+            font-size: 0.7rem;
+            padding: 0.2em 0.4em;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -172,7 +191,7 @@
     <footer class="mt-5 py-4 bg-white border-top">
         <div class="container text-center">
             <p class="mb-0 text-muted">
-                © 2024 GoodChoice - Виртуальный гардероб для стильных решений
+                © 2026 GoodChoice - Виртуальный гардероб для стильных решений
             </p>
         </div>
     </footer>
