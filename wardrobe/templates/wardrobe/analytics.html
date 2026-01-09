@@ -21,9 +21,9 @@
             </p>
         </div>
         {% else %}
-        <!-- Карточки со статистикой -->
+        <!-- 1. БАЗОВАЯ СТАТИСТИКА -->
         <div class="row mb-5">
-            <div class="col-xl-3 col-md-6 mb-4">
+            <div class="col col-md-6 mb-4">
                 <div class="card text-center h-100 border-primary">
                     <div class="card-body">
                         <div class="display-6 text-primary mb-2">{{ total_items }}</div>
@@ -33,7 +33,7 @@
                 </div>
             </div>
             
-            <div class="col-xl-3 col-md-6 mb-4">
+            <div class="col col-md-6 mb-4">
                 <div class="card text-center h-100 border-success">
                     <div class="card-body">
                         <div class="display-6 text-success mb-2">{{ total_outfits }}</div>
@@ -56,21 +56,183 @@
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="card text-center h-100 border-info">
                     <div class="card-body">
-                        <div class="display-6 text-info mb-2">
-                            {% if most_common_color %}
-                                {{ most_common_color.get_color_display }}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </div>
-                        <h5 class="card-title">Популярный цвет</h5>
-                        <p class="card-text small text-muted">В гардеробе</p>
+                        <div class="display-6 text-info mb-2">{{ usage_percentage }}%</div>
+                        <h5 class="card-title">Использование</h5>
+                        <p class="card-text small text-muted">Вещей в образах</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col col-md-6 mb-4">
+                <div class="card text-center h-100 border-info">
+                    <div class="card-body">
+                        <div class="display-6 text-info mb-2">{{ total_price|floatformat:2 }} руб.</div>
+                        <h5 class="card-title">Стоимость гардероба</h5>
+                        <p class="card-text small text-muted">Сумма потраченная на вещи</p>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Графики -->
+
+        <!-- Самая дорогая и дешевая вещь -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-arrow-up-circle text-danger"></i> Самая дорогая вещь (топ 3)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for item in most_expensive_items %}
+                                {% include 'wardrobe/item_card.html' with item=item %}
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    Нет данных о ценах
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-arrow-down-circle text-success"></i> Самая дешевая вещь (топ 3)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for item in cheapest_items %}
+                                {% include 'wardrobe/item_card.html' with item=item %}
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-warning">
+                                    Нет данных о ценах
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Распределение бюджета по категориям -->
+        <div class="card mb-5">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Распределение бюджета по категориям</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for category, data in category_budget.items %}
+                    <div class="col-md-4 col-lg-3 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ category }}</h6>
+                                <div class="display-6 text-primary">{{ data.total|floatformat:2 }} руб.</div>
+                                <p class="mb-1 small text-muted">{{ data.percent }}% от бюджета</p>
+                                <p class="mb-0 small text-muted">{{ data.count }} вещей</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Нет данных о ценах вещей
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. СТАТИСТИКА ИСПОЛЬЗОВАНИЯ -->
+        <div class="row mb-5">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-star-fill"></i> Самые популярные вещи</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Вещи, которые входят в больше всего образов</p>
+                        <div class="row">
+                            {% for item_data in popular_items %}
+                                {% with item=item_data.item %}
+                                <div class="col-12 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">{{ item.name }}</h6>
+                                                    <p class="mb-0 small text-muted">{{ item.get_category_display }}</p>
+                                                </div>
+                                                <div>
+                                                    <span class="badge bg-primary">В {{ item_data.outfit_count }} образах</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endwith %}
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> Вещи еще не используются в образах
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-eye-slash"></i> Неиспользуемые вещи</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Вещи, которые не входят ни в один образ</p>
+                        <div class="row">
+                            {% for item in unused_items %}
+                                {% include 'wardrobe/item_card.html' with item=item %}
+                            {% empty %}
+                            <div class="col-12">
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i> Все вещи используются в образах!
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. СЕЗОННАЯ АНАЛИТИКА -->
+        <div class="card mb-5">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-sun"></i> Сезонное распределение</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for season, stats in season_stats.items %}
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ season }}</h5>
+                                <div class="display-6">{{ stats.count }}</div>
+                                <p class="card-text small text-muted">{{ stats.percent }}% от гардероба</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. ГРАФИКИ -->
         <div class="row mb-5">
             <div class="col-lg-6 mb-4">
                 <div class="card h-100">
@@ -108,42 +270,42 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Рекомендации -->
+
+        <!-- 6. РЕКОМЕНДАЦИИ -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Рекомендации</h5>
+                <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> Рекомендации</h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6><i class="bi bi-check-circle text-success"></i> Что хорошо:</h6>
-                        <ul>
-                            {% if total_items >= 20 %}
-                            <li>У вас достаточно вещей для создания разнообразных образов</li>
-                            {% endif %}
-                            {% if avg_rating >= 4 %}
-                            <li>Вы в основном добавляете вещи, которые вам нравятся (высокая средняя оценка)</li>
-                            {% endif %}
-                            {% if total_outfits >= 5 %}
-                            <li>Вы активно создаете образы - это помогает лучше использовать гардероб</li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                    
-                    <div class="col-md-6">
-                        <h6><i class="bi bi-exclamation-triangle text-warning"></i> На что обратить внимание:</h6>
-                        <ul>
-                            {% if total_items < 10 %}
-                            <li>В гардеробе мало вещей. Добавьте базовые элементы</li>
-                            {% endif %}
-                            {% if most_common_color and most_common_color.count > total_items|divisibleby:"2" %}
-                            <li>Преобладает один цвет ({{ most_common_color.get_color_display }}). Попробуйте добавить другие цвета</li>
-                            {% endif %}
-                            {% if total_outfits == 0 %}
-                            <li>Вы еще не создали ни одного образа. Попробуйте собрать первый!</li>
-                            {% endif %}
-                        </ul>
+                {% if recommendations %}
+                <ul class="list-group">
+                    {% for recommendation in recommendations %}
+                    <li class="list-group-item">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i>
+                        {{ recommendation }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="alert alert-success">
+                    <h5><i class="bi bi-check-circle"></i> Отличный гардероб!</h5>
+                    <p class="mb-0">У вас хорошо сбалансированный гардероб. Продолжайте в том же духе!</p>
+                </div>
+                {% endif %}
+                
+                <div class="mt-4">
+                    <h6><i class="bi bi-clipboard-data"></i> Статистика по категориям:</h6>
+                    <div class="row mt-2">
+                        {% for category, count in category_counts.items %}
+                        <div class="col-md-3 col-6 mb-2">
+                            <div class="card">
+                                <div class="card-body p-2 text-center">
+                                    <div class="small text-muted">{{ category }}</div>
+                                    <div class="fw-bold">{{ count }} шт.</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

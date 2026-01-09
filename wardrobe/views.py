@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count, Avg, Q
+from django.db.models import Count, Avg, Sum, Max, Min
 from django.http import JsonResponse
 import plotly.express as px
 import pandas as pd
@@ -163,6 +163,103 @@ def analytics(request):
         context = {'has_items': False}
         return render(request, 'wardrobe/analytics.html', context)
     
+    # ============ БАЗОВАЯ СТАТИСТИКА ============
+    total_items = items.count()
+    total_outfits = Outfit.objects.filter(user=request.user).count()
+    avg_rating = items.aggregate(avg=Avg('rating'))['avg'] or 0
+    
+    # ============ ФИНАНСОВАЯ АНАЛИТИКА ============
+    # Стоимость всего гардероба (только вещи с ценой)
+    price_stats = items.filter(price__isnull=False).aggregate(
+        total=Sum('price'),
+        avg=Avg('price'),
+        max=Max('price'),
+        min=Min('price')
+    )
+    
+    total_price = price_stats['total'] or 0
+    avg_price = price_stats['avg'] or 0
+    
+    # Самая дорогая вещь (топ 3)
+    most_expensive_items = items.filter(price__isnull=False).order_by('-price')[:3]
+    
+    # Самая дешевая вещь (топ 3)
+    cheapest_items = items.filter(price__isnull=False).order_by('price')[:3]
+    
+    # Распределение бюджета по категориям
+    category_budget = {}
+    for category_code, category_name in ClothingItem.CATEGORY_CHOICES:
+        category_items = items.filter(category=category_code, price__isnull=False)
+        category_total = category_items.aggregate(total=Sum('price'))['total'] or 0
+        if category_total > 0:
+            category_budget[category_name] = {
+                'total': category_total,
+                'percent': round((category_total / total_price) * 100, 1) if total_price > 0 else 0,
+                'count': category_items.count()
+            }
+    
+    # ============ СТАТИСТИКА ИСПОЛЬЗОВАНИЯ ============
+    # Самые популярные вещи (входят в больше всего образов)
+    popular_items_data = []
+    for item in items:
+        outfit_count = Outfit.objects.filter(items=item, user=request.user).count()
+        if outfit_count > 0:
+            popular_items_data.append({
+                'item': item,
+                'outfit_count': outfit_count
+            })
+    popular_items = sorted(popular_items_data, key=lambda x: x['outfit_count'], reverse=True)[:3]
+    
+    # Неиспользуемые вещи (ни в одном образе)
+    unused_items = []
+    for item in items:
+        outfit_count = Outfit.objects.filter(items=item, user=request.user).count()
+        if outfit_count == 0:
+            unused_items.append(item)
+    unused_items = unused_items[:3]
+    
+    # Коэффициент использования
+    used_items_count = sum(1 for item in items if Outfit.objects.filter(items=item, user=request.user).exists())
+    usage_percentage = round((used_items_count / total_items) * 100, 1) if total_items > 0 else 0
+    
+    # ============ СЕЗОННАЯ АНАЛИТИКА ============
+    season_stats = {}
+    for season_code, season_name in ClothingItem.SEASON_CHOICES:
+        season_count = items.filter(season__contains=season_code).count()
+        season_stats[season_name] = {
+            'count': season_count,
+            'percent': round((season_count / total_items) * 100, 1) if total_items > 0 else 0
+        }
+    
+    # ============ РЕКОМЕНДАЦИИ ============
+    recommendations = []
+    
+    # Проверяем пробелы по категориям
+    category_counts = {}
+    for category_code, category_name in ClothingItem.CATEGORY_CHOICES:
+        count = items.filter(category=category_code).count()
+        category_counts[category_name] = count
+        
+        # Рекомендации по категориям
+        if count < 3 and total_items >= 10:
+            recommendations.append(f"Мало вещей категории '{category_name}' ({count} шт.)")
+    
+    # Проверяем вещи без цены
+    items_without_price = items.filter(price__isnull=True).count()
+    if items_without_price > 0:
+        recommendations.append(f"У {items_without_price} вещей не указана цена")
+    
+    # Проверяем неиспользуемые вещи
+    if len(unused_items) >= 3:
+        recommendations.append(f"У вас {len(unused_items)}+ вещей не используются в образах")
+    
+    # Проверяем сезонные пробелы
+    for season_name, stats in season_stats.items():
+        if stats['percent'] < 15 and total_items >= 10:
+            recommendations.append(f"Мало вещей для сезона '{season_name}' ({stats['count']} шт.)")
+    
+    # ============ ГРАФИКИ (Data Science) ============
+    # График распределения по цветам
     color_data = items.values('color').annotate(count=Count('id')).order_by('-count')
     color_df = pd.DataFrame(list(color_data))
     
@@ -184,6 +281,7 @@ def analytics(request):
     else:
         color_chart = None
     
+    # График распределения по категориям
     category_data = items.values('category').annotate(count=Count('id')).order_by('-count')
     category_df = pd.DataFrame(list(category_data))
     
@@ -201,20 +299,33 @@ def analytics(request):
     else:
         category_chart = None
     
-    total_items = items.count()
-    total_outfits = Outfit.objects.filter(user=request.user).count()
-    avg_rating = items.aggregate(avg=Avg('rating'))['avg'] or 0
-    
-    most_common_color = items.values('color').annotate(count=Count('id')).order_by('-count').first()
-    most_common_category = items.values('category').annotate(count=Count('id')).order_by('-count').first()
-    
+    # ============ КОНТЕКСТ ============
     context = {
         'has_items': True,
         'total_items': total_items,
         'total_outfits': total_outfits,
         'avg_rating': round(avg_rating, 1),
-        'most_common_color': most_common_color,
-        'most_common_category': most_common_category,
+        
+        # Финансовая аналитика
+        'total_price': total_price,
+        'avg_price': round(avg_price, 2) if avg_price else 0,
+        'most_expensive_items': most_expensive_items,
+        'cheapest_items': cheapest_items,
+        'category_budget': category_budget,
+        
+        # Статистика использования
+        'popular_items': popular_items,
+        'unused_items': unused_items,
+        'usage_percentage': usage_percentage,
+        
+        # Сезонная аналитика
+        'season_stats': season_stats,
+        
+        # Рекомендации
+        'recommendations': recommendations,
+        'category_counts': category_counts,
+        
+        # Графики
         'color_chart': color_chart,
         'category_chart': category_chart,
     }
