@@ -37,3 +37,12 @@
         {% endfor %}
     </div>
 </div>
+<div class="modal-footer">
+    <form method="post" action="{% url 'wardrobe:delete_outfit' outfit.id %}" class="d-inline">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить этот образ?')">
+            <i class="bi bi-trash"></i> Удалить
+        </button>
+    </form>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+</div>

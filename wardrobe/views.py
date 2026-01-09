@@ -351,3 +351,23 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'Вы успешно вышли из системы.')
     return redirect('wardrobe:home')
+
+@login_required
+def delete_item(request, item_id):
+    """Удаление вещи"""
+    item = get_object_or_404(ClothingItem, id=item_id, user=request.user)
+    
+    item_name = item.name
+    item.delete()
+    messages.success(request, f'Вещь "{item_name}" успешно удалена!')
+    return redirect('wardrobe:wardrobe_list')
+
+@login_required
+def delete_outfit(request, outfit_id):
+    """Удаление образа"""
+    outfit = get_object_or_404(Outfit, id=outfit_id, user=request.user)
+    
+    outfit_name = outfit.name
+    outfit.delete()
+    messages.success(request, f'Образ "{outfit_name}" успешно удален!')
+    return redirect('wardrobe:outfit_list')
