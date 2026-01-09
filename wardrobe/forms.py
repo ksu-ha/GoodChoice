@@ -14,7 +14,7 @@ class ClothingItemForm(forms.ModelForm):
     
     class Meta:
         model = ClothingItem
-        fields = ['name', 'image', 'description', 'color', 'category', 'season', 'occasion', 'rating']
+        fields = ['name', 'image', 'description', 'color', 'category', 'season', 'occasion', 'rating', 'price']
         
         widgets = {
             'name': forms.TextInput(attrs={
@@ -31,6 +31,11 @@ class ClothingItemForm(forms.ModelForm):
             'occasion': forms.Select(attrs={'class': 'form-control'}),
             'rating': forms.Select(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'price': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Например: 2999.99',
+                'step': '0.01'
+            }),
         }
         
         labels = {
@@ -41,6 +46,7 @@ class ClothingItemForm(forms.ModelForm):
             'category': 'Категория',
             'occasion': 'Тип мероприятия',
             'rating': 'Личная оценка',
+            'price': 'Цена (руб.)', 
         }
 
 class OutfitForm(forms.ModelForm):

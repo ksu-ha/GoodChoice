@@ -60,6 +60,7 @@ class ClothingItem(models.Model):
     occasion = models.CharField(max_length=20, choices=OCCASION_CHOICES, default='any', verbose_name="Тип мероприятия")
     rating = models.IntegerField(choices=[(i, f'{i} ★') for i in range(1, 6)], default=3, verbose_name="Личная оценка")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена")
     
     def __str__(self):
         return self.name

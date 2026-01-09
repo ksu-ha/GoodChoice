@@ -68,6 +68,18 @@
             <option value="5" {% if current_filters.min_rating == '5' %}selected{% endif %}>Только 5 ★</option>
         </select>
     </div>
+
+    <div class="mb-4">
+        <label class="form-label">Цена</label>
+        <div class="input-group mb-2">
+            <span class="input-group-text">От</span>
+            <input type="number" name="price_min" class="form-control" placeholder="0" value="{{ current_filters.price_min }}">
+        </div>
+        <div class="input-group">
+            <span class="input-group-text">До</span>
+            <input type="number" name="price_max" class="form-control" placeholder="100000" value="{{ current_filters.price_max }}">
+        </div>
+    </div>
     
     <!-- Дата -->
     <div class="mb-4">

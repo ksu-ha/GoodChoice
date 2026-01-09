@@ -49,6 +49,8 @@ def wardrobe_list(request):
     min_rating = request.GET.get('min_rating', '')
     date_from = request.GET.get('date_from', '')
     date_to = request.GET.get('date_to', '')
+    price_min = request.GET.get('price_min', '')
+    price_max = request.GET.get('price_max', '')
     
     if category:
         items = items.filter(category=category)
@@ -64,6 +66,10 @@ def wardrobe_list(request):
         items = items.filter(created_at__gte=date_from)
     if date_to:
         items = items.filter(created_at__lte=date_to)
+    if price_min:
+        items = items.filter(price__gte=price_min)
+    if price_max:
+        items = items.filter(price__lte=price_max)
     
     context = {
         'items': items,
@@ -75,6 +81,8 @@ def wardrobe_list(request):
             'min_rating': min_rating,
             'date_from': date_from,
             'date_to': date_to,
+            'price_min': price_min,
+            'price_max': price_max,
         }
     }
     return render(request, 'wardrobe/wardrobe_list.html', context)

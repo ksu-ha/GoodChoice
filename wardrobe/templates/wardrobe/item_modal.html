@@ -18,6 +18,9 @@
             <p><strong>Цвет:</strong> {{ item.get_color_display }}</p>
             <p><strong>Сезоны:</strong> {{ item.get_seasons_display }}</p>
             <p><strong>Тип мероприятия:</strong> {{ item.get_occasion_display }}</p>
+            {% if item.price %}
+            <p><strong>Цена:</strong> {{ item.price }} руб.</p>
+            {% endif %}
             <p><strong>Оценка:</strong> 
                 <span class="rating-stars">
                     {% for i in "12345" %}
