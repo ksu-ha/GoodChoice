@@ -16,7 +16,7 @@
                     {% endfor %}
                 </div>
                 {% if outfit.items.count > 4 %}
-                <div class="position-absolute top-0 end-0 bg-dark text-white p-2 rounded-bottom-start">
+                <div class="position-absolute top-0 end-0 bg-dark text-white p-2 rounded-bottom-start bor">
                     +{{ outfit.items.count|add:"-4" }}
                 </div>
                 {% endif %}
@@ -29,10 +29,6 @@
         
         <div class="card-body p-2">
             <h6 class="card-title mb-1">{{ outfit.name|truncatechars:15 }}</h6>
-            <span class="badge bg-primary mb-1">{{ outfit.get_occasion_display }}</span>
-            <div class="rounded-top-end">
-                {{ outfit.items.count }} вещей
-            </div>
             <div class="rating-stars small">
                 {% for i in "12345" %}
                     {% if forloop.counter <= outfit.rating %}
@@ -42,6 +38,13 @@
                     {% endif %}
                 {% endfor %}
             </div>
+            <div class="rounded-top-end">
+                {{ outfit.items.count }} вещей
+            </div>
+            
+            <p class="card-text small text-muted">
+                <i class="bi bi-briefcase"></i> {{ outfit.get_occasion_display }}
+            </p>
         </div>
     </div>
 </div>

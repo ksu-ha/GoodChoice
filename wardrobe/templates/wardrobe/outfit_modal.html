@@ -5,7 +5,7 @@
 <div class="modal-body">
     <div class="row mb-3">
         <div class="col-md-6">
-            <p><strong>Тип мероприятия:</strong> <span class="badge bg-success">{{ outfit.get_occasion_display }}</span></p>
+            <p><strong>Тип мероприятия:</strong> {{ outfit.get_occasion_display }}</p>
             <p><strong>Оценка:</strong> 
                 <span class="rating-stars">
                     {% for i in "12345" %}
