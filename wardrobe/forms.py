@@ -1,5 +1,7 @@
 from django import forms
 from .models import ClothingItem, Outfit
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
 
 class ClothingItemForm(forms.ModelForm):
     """Форма для добавления/редактирования вещей"""
@@ -78,3 +80,45 @@ class OutfitForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['items'].queryset = ClothingItem.objects.filter(user=user)
+
+class CustomUserCreationForm(UserCreationForm):
+    """Форма регистрации без email"""
+    
+    class Meta:
+        model = User
+        fields = ('username', 'password1', 'password2')
+        
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Придумайте логин'
+            }),
+        }
+        
+        labels = {
+            'username': 'Логин',
+            'password1': 'Пароль',
+            'password2': 'Подтверждение пароля',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].widget.attrs.update({'class': 'form-control'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control'})
+
+class CustomAuthenticationForm(AuthenticationForm):
+    """Форма входа"""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Ваш логин'
+        })
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Ваш пароль'
+        })
+        
+        self.fields['username'].label = 'Логин'
+        self.fields['password'].label = 'Пароль'

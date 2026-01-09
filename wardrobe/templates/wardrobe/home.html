@@ -3,6 +3,18 @@
 {% block title %}Главная - GoodChoice{% endblock %}
 
 {% block content %}
+{% if not user.is_authenticated %}
+<div class="alert alert-info">
+    <h4><i class="bi bi-info-circle"></i> Добро пожаловать в GoodChoice!</h4>
+    <p>
+        Создайте свой виртуальный гардероб, добавляйте вещи, создавайте образы и получайте аналитику.
+        <a href="{% url 'wardrobe:register' %}" class="alert-link">Зарегистрируйтесь</a> 
+        или 
+        <a href="{% url 'wardrobe:login' %}" class="alert-link">войдите</a>, 
+        чтобы начать использовать все возможности.
+    </p>
+</div>
+{% endif %}
 <div class="row">
     <!-- Левая колонка: Недавно добавленные вещи и образы -->
     <div class="col-lg-8">

@@ -121,14 +121,19 @@
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin:logout' %}">
+                            <a class="nav-link" href="{% url 'wardrobe:logout' %}">
                                 <i class="bi bi-box-arrow-right"></i> Выйти
                             </a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'admin:login' %}">
+                            <a class="nav-link" href="{% url 'wardrobe:login' %}">
                                 <i class="bi bi-box-arrow-in-right"></i> Войти
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'wardrobe:register' %}">
+                                <i class="bi bi-person-plus"></i> Регистрация
                             </a>
                         </li>
                     {% endif %}

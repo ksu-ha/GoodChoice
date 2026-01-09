@@ -6,7 +6,9 @@ from django.http import JsonResponse
 import plotly.express as px
 import pandas as pd
 from plotly.offline import plot
-
+from django.contrib.auth import login, logout, authenticate
+from django.shortcuts import render, redirect
+from .forms import CustomUserCreationForm, CustomAuthenticationForm
 from .models import ClothingItem, Outfit
 from .forms import ClothingItemForm, OutfitForm
 
@@ -294,3 +296,50 @@ def item_modal_view(request, item_id):
 def outfit_modal_view(request, outfit_id):
     outfit = get_object_or_404(Outfit, id=outfit_id)
     return render(request, 'wardrobe/outfit_modal.html', {'outfit': outfit})
+
+def register_view(request):
+    """Регистрация нового пользователя"""
+    if request.user.is_authenticated:
+        return redirect('wardrobe:home')
+    
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, f'Добро пожаловать, {user.username}!')
+            return redirect('wardrobe:home')
+    else:
+        form = CustomUserCreationForm()
+    
+    context = {'form': form}
+    return render(request, 'wardrobe/register.html', context)
+
+def login_view(request):
+    """Вход пользователя"""
+    if request.user.is_authenticated:
+        return redirect('wardrobe:home')
+    
+    if request.method == 'POST':
+        form = CustomAuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'С возвращением, {username}!')
+                next_url = request.GET.get('next', 'wardrobe:home')
+                return redirect(next_url)
+    else:
+        form = CustomAuthenticationForm()
+    
+    context = {'form': form}
+    return render(request, 'wardrobe/login.html', context)
+
+@login_required
+def logout_view(request):
+    """Выход пользователя"""
+    logout(request)
+    messages.info(request, 'Вы успешно вышли из системы.')
+    return redirect('wardrobe:home')
