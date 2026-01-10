@@ -83,7 +83,7 @@
                     <div class="card-body">
                         <div class="row">
                             {% for item in most_expensive_items %}
-                                {% include 'wardrobe/item_card.html' with item=item %}
+                                {% include 'wardrobe/item_card.html' with item=item col_size='4' %}
                             {% empty %}
                             <div class="col-12">
                                 <div class="alert alert-warning">
@@ -104,7 +104,7 @@
                     <div class="card-body">
                         <div class="row">
                             {% for item in cheapest_items %}
-                                {% include 'wardrobe/item_card.html' with item=item %}
+                                {% include 'wardrobe/item_card.html' with item=item col_size='4' %}
                             {% empty %}
                             <div class="col-12">
                                 <div class="alert alert-warning">
@@ -196,7 +196,7 @@
                         <p class="text-muted">Вещи, которые не входят ни в один образ</p>
                         <div class="row">
                             {% for item in unused_items %}
-                                {% include 'wardrobe/item_card.html' with item=item %}
+                                {% include 'wardrobe/item_card.html' with item=item col_size='4' %}
                             {% empty %}
                             <div class="col-12">
                                 <div class="alert alert-success">

@@ -11,6 +11,12 @@ class ClothingItemForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         label="Сезон"
     )
+
+    occasion = forms.MultipleChoiceField( 
+        choices=ClothingItem.OCCASION_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        label="Тип мероприятия"
+    )
     
     class Meta:
         model = ClothingItem
@@ -28,7 +34,6 @@ class ClothingItemForm(forms.ModelForm):
             }),
             'color': forms.Select(attrs={'class': 'form-control'}),
             'category': forms.Select(attrs={'class': 'form-control'}),
-            'occasion': forms.Select(attrs={'class': 'form-control'}),
             'rating': forms.Select(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'price': forms.NumberInput(attrs={
@@ -51,7 +56,12 @@ class ClothingItemForm(forms.ModelForm):
 
 class OutfitForm(forms.ModelForm):
     """Форма для создания образов"""
-    
+    occasion = forms.MultipleChoiceField(
+        choices=Outfit.OCCASION_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        label="Тип мероприятия"
+    )
+
     class Meta:
         model = Outfit
         fields = ['name', 'description', 'items', 'occasion', 'rating']
@@ -70,7 +80,6 @@ class OutfitForm(forms.ModelForm):
                 'class': 'form-control',
                 'size': 6
             }),
-            'occasion': forms.Select(attrs={'class': 'form-control'}),
             'rating': forms.Select(attrs={'class': 'form-control'}),
         }
         

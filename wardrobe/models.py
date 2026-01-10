@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from .utils import get_display_from_comma_separated
+
 
 class ClothingItem(models.Model):
     """Модель вещи в гардеробе"""
     
-    # Категории (как ты указала)
+    # Категории
     CATEGORY_CHOICES = [
         ('top', 'Верх'),
         ('bottom', 'Низ'),
@@ -30,7 +32,7 @@ class ClothingItem(models.Model):
         ('multicolor', 'Разноцветный'),
     ]
     
-    # Сезоны (можно выбрать несколько - будем хранить как строку)
+    # Сезоны
     SEASON_CHOICES = [
         ('winter', 'Зима'),
         ('spring', 'Весна'),
@@ -53,11 +55,8 @@ class ClothingItem(models.Model):
     description = models.TextField(verbose_name="Описание", blank=True)
     color = models.CharField(max_length=20, choices=COLOR_CHOICES, verbose_name="Цвет")
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, verbose_name="Категория")
-    
-    # Сезон как CharField для хранения нескольких значений через запятую
     season = models.CharField(max_length=50, verbose_name="Сезон")
-    
-    occasion = models.CharField(max_length=20, choices=OCCASION_CHOICES, default='any', verbose_name="Тип мероприятия")
+    occasion = models.CharField(max_length=100, verbose_name="Тип мероприятия")
     rating = models.IntegerField(choices=[(i, f'{i} ★') for i in range(1, 6)], default=3, verbose_name="Личная оценка")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена")
@@ -70,6 +69,12 @@ class ClothingItem(models.Model):
         verbose_name_plural = "Вещи"
         ordering = ['-created_at']
 
+    def get_seasons_display(self):
+        return get_display_from_comma_separated(self, 'season', self.SEASON_CHOICES)
+    
+    def get_occasion_display(self):
+        return get_display_from_comma_separated(self, 'occasion', self.OCCASION_CHOICES)
+
 class Outfit(models.Model):
     """Модель образа (комбинации вещей)"""
     
@@ -79,7 +84,7 @@ class Outfit(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название образа")
     description = models.TextField(verbose_name="Описание", blank=True)
     items = models.ManyToManyField(ClothingItem, verbose_name="Вещи в образе")
-    occasion = models.CharField(max_length=20, choices=OCCASION_CHOICES, default='any', verbose_name="Тип мероприятия")
+    occasion = models.CharField(max_length=100, verbose_name="Тип мероприятия")
     rating = models.IntegerField(choices=[(i, f'{i} ★') for i in range(1, 6)], default=3, verbose_name="Личная оценка")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
     
@@ -90,3 +95,6 @@ class Outfit(models.Model):
         verbose_name = "Образ"
         verbose_name_plural = "Образы"
         ordering = ['-created_at']
+
+    def get_occasion_display(self):
+        return get_display_from_comma_separated(self, 'occasion', self.OCCASION_CHOICES)

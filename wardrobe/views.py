@@ -59,7 +59,7 @@ def wardrobe_list(request):
     if season:
         items = items.filter(season__contains=season)
     if occasion:
-        items = items.filter(occasion=occasion)
+        items = items.filter(occasion__contains=occasion) 
     if min_rating:
         items = items.filter(rating__gte=int(min_rating))
     if date_from:
@@ -97,6 +97,8 @@ def add_clothing_item(request):
             item.user = request.user
             seasons = form.cleaned_data['season']
             item.season = ','.join(seasons)
+            occasions = form.cleaned_data['occasion']
+            item.occasion = ','.join(occasions)
             item.save()
             messages.success(request, 'Вещь успешно добавлена в гардероб!')
             return redirect('wardrobe:wardrobe_list')
@@ -144,6 +146,8 @@ def create_outfit(request):
         if form.is_valid():
             outfit = form.save(commit=False)
             outfit.user = request.user
+            occasions = form.cleaned_data['occasion']
+            outfit.occasion = ','.join(occasions)
             outfit.save()
             form.save_m2m()
             messages.success(request, 'Образ успешно создан!')
@@ -348,7 +352,21 @@ def get_item_detail(request, item_id):
             if season in season_mapping:
                 seasons_list.append(season_mapping[season])
     
+    occasions_list = []
+    if item.occasion:
+        occasion_mapping = {
+            'office': 'В офис',
+            'home': 'Для дома',
+            'walk': 'На прогулку',
+            'party': 'На праздник',
+            'any': 'Любой'
+        }
+        for occasion in item.occasion.split(','):
+            if occasion in occasion_mapping:
+                occasions_list.append(occasion_mapping[occasion])
+    
     seasons_text = ', '.join(seasons_list) if seasons_list else 'Не указано'
+    occasions_text = ', '.join(occasions_list) if occasions_list else 'Не указано'
     
     used_in_outfits = Outfit.objects.filter(items=item, user=request.user).count()
     
@@ -363,7 +381,7 @@ def get_item_detail(request, item_id):
             'color_code': item.color,
             'category': item.get_category_display(),
             'seasons': seasons_text,
-            'occasion': item.get_occasion_display(),
+            'occasion': occasions_text,
             'rating': item.rating,
             'created_at': item.created_at.strftime('%d.%m.%Y %H:%M'),
             'used_in_outfits': used_in_outfits,
