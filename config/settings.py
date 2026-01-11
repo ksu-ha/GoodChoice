@@ -21,8 +21,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'запасной-ключ')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-allowed_hosts = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1')
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',')]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'goodchoice.onrender.com']
 
 
 # Application definition
