@@ -51,7 +51,7 @@
 
 1. **Клонируйте репозиторий:**
 ```bash
-git clone https://github.com/<ваш-юзернейм>/<ваш-репозиторий>.git
+git clone https://github.com/ksu-ha/GoodChoice.git>.git
 cd <ваш-репозиторий>
 ```
 
