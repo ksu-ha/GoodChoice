@@ -39,14 +39,3 @@
         </div>
     </div>
 </div>
-<div class="modal-footer">
-    {% if show_delete %}
-    <form method="post" action="{% url 'wardrobe:delete_item' item.id %}" class="d-inline">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Удалить эту вещь?')">
-            <i class="bi bi-trash"></i> Удалить
-        </button>
-    </form>
-    {% endif %}
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-</div>
