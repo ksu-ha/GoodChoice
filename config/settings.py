@@ -130,3 +130,23 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 # Для деплоя (позже раскомментируем):
 # STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+if 'RENDER' in os.environ:
+    # Режим продакшена
+    DEBUG = False
+    
+    # Хост Render
+    ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME'), 'localhost']
+    
+    # PostgreSQL от Render
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600
+        )
+    }
+    
+    # Статика
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
