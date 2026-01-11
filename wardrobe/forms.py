@@ -137,3 +137,42 @@ class CustomAuthenticationForm(AuthenticationForm):
         
         self.fields['username'].label = 'Логин'
         self.fields['password'].label = 'Пароль'
+    
+class GenerateOutfitForm(forms.Form):
+    """Форма для генерации образов с чекбоксами"""
+    
+    CATEGORY_CHOICES = ClothingItem.CATEGORY_CHOICES
+    
+    categories = forms.MultipleChoiceField(
+        choices=CATEGORY_CHOICES,
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}),
+        label="Категории для образа",
+        required=True,
+        error_messages={
+            'required': 'Выберите хотя бы 2 категории',
+        }
+    )
+    
+    def clean_categories(self):
+        categories = self.cleaned_data.get('categories')
+        if len(categories) < 2:
+            raise forms.ValidationError("Выберите минимум 2 категории")
+        return categories
+
+class RateOutfitForm(forms.Form):
+    """Форма для оценки сгенерированного образа"""
+    
+    RATING_CHOICES = [
+        (1, '1 ★'),
+        (2, '2 ★'),
+        (3, '3 ★'),
+        (4, '4 ★'),
+        (5, '5 ★'),
+    ]
+    
+    rating = forms.ChoiceField(
+        choices=RATING_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'btn-check'}),
+        label="Оцените образ",
+        required=True
+    )

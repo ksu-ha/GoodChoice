@@ -19,4 +19,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('wardrobe/item/<int:item_id>/delete/', views.delete_item, name='delete_item'),
     path('outfits/outfit/<int:outfit_id>/delete/', views.delete_outfit, name='delete_outfit'),
+    path('generate/', views.generate_outfit, name='generate_outfit'),
+    path('regenerate/', views.regenerate_outfit, name='regenerate_outfit'),
+    path('rate/', views.rate_outfit, name='rate_outfit'),
 ]

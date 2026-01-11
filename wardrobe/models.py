@@ -60,6 +60,7 @@ class ClothingItem(models.Model):
     rating = models.IntegerField(choices=[(i, f'{i} ★') for i in range(1, 6)], default=3, verbose_name="Личная оценка")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Цена")
+    times_shown = models.IntegerField(default=0, verbose_name="Показов")
     
     def __str__(self):
         return self.name
@@ -98,3 +99,19 @@ class Outfit(models.Model):
 
     def get_occasion_display(self):
         return get_display_from_comma_separated(self, 'occasion', self.OCCASION_CHOICES)
+    
+class Compatibility(models.Model):
+    """Cовместимость вещей"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Пользователь")
+    item1 = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name='compatibility_as_item1')
+    item2 = models.ForeignKey(ClothingItem, on_delete=models.CASCADE, related_name='compatibility_as_item2')
+    score = models.FloatField(default=0, verbose_name="Оценка совместимости")
+    times_evaluated = models.IntegerField(default=0, verbose_name="Количество оценок")
+    
+    class Meta:
+        unique_together = [['user', 'item1', 'item2']]
+        verbose_name = "Совместимость"
+        verbose_name_plural = "Совместимости"
+    
+    def __str__(self):
+        return f"{self.item1} + {self.item2}: {self.score:.2f}"

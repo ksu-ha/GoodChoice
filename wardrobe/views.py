@@ -1,16 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth import login, logout, authenticate
 from django.db.models import Count, Avg, Sum, Max, Min
 from django.http import JsonResponse
-import plotly.express as px
+
+import random
 import pandas as pd
+import plotly.express as px
 from plotly.offline import plot
-from django.contrib.auth import login, logout, authenticate
-from django.shortcuts import render, redirect
-from .forms import CustomUserCreationForm, CustomAuthenticationForm
-from .models import ClothingItem, Outfit
-from .forms import ClothingItemForm, OutfitForm
+
+from .models import ClothingItem, Outfit, Compatibility
+from .forms import (
+    ClothingItemForm, OutfitForm, CustomUserCreationForm, 
+    CustomAuthenticationForm, GenerateOutfitForm, RateOutfitForm
+)
+
 
 def home(request):
     """Главная страница"""
@@ -427,7 +432,7 @@ def get_outfit_detail(request, outfit_id):
 
 def item_modal_view(request, item_id):
     item = get_object_or_404(ClothingItem, id=item_id)
-    return render(request, 'wardrobe/item_modal.html', {'item': item})
+    return render(request, 'wardrobe/item_modal.html', {'item': item, 'show_delete': False})
 
 
 def outfit_modal_view(request, outfit_id):
@@ -500,3 +505,367 @@ def delete_outfit(request, outfit_id):
     outfit.delete()
     messages.success(request, f'Образ "{outfit_name}" успешно удален!')
     return redirect('wardrobe:outfit_list')
+
+@login_required
+def generate_outfit(request):
+    """Главная страница генерации образов"""
+    
+    user_items_count = ClothingItem.objects.filter(user=request.user).count()
+    
+    if user_items_count < 2:
+        messages.warning(request, 'Добавьте минимум 2 вещи в гардероб для генерации образов')
+        return redirect('wardrobe:add_item')
+    
+    recommendations = get_recommendations(request.user)
+    
+    # Проверяем, есть ли оцененный образ в сессии
+    outfit_rated = request.session.pop('outfit_rated', False)
+    last_rating = request.session.pop('last_rating', None)
+    
+    # Проверяем, есть ли в сессии уже выбранные категории
+    saved_categories = request.session.get('selected_categories', [])
+    
+    # Проверяем, есть ли сгенерированный образ в сессии
+    has_generated_outfit = 'generated_outfit' in request.session
+    generated_items = None
+    rating_form = None
+    
+    if has_generated_outfit:
+        outfit_data = request.session['generated_outfit']
+        item_ids = outfit_data['item_ids']
+        generated_items = ClothingItem.objects.filter(id__in=item_ids, user=request.user)
+        
+        # Показываем форму оценки только если образ еще не оценен
+        if not outfit_rated:
+            rating_form = RateOutfitForm()
+    
+    if request.method == 'POST':
+        # Если это запрос на генерацию
+        if 'generate' in request.POST:
+            form = GenerateOutfitForm(request.POST)
+            
+            if form.is_valid():
+                categories = form.cleaned_data['categories']
+                
+                # Проверяем, есть ли вещи в выбранных категориях
+                categories_with_items = []
+                for category in categories:
+                    count = ClothingItem.objects.filter(
+                        user=request.user, 
+                        category=category
+                    ).count()
+                    if count > 0:
+                        categories_with_items.append(category)
+                    else:
+                        messages.warning(
+                            request, 
+                            f'В категории "{dict(ClothingItem.CATEGORY_CHOICES)[category]}" нет вещей. '
+                            f'Она не будет использована в генерации.'
+                        )
+                
+                if len(categories_with_items) < 2:
+                    messages.error(
+                        request, 
+                        f'В выбранных категориях недостаточно вещей. '
+                        f'Выберите другие категории или добавьте вещи в гардероб.'
+                    )
+                    return redirect('wardrobe:generate_outfit')
+                
+                # Сохраняем категории в сессии
+                request.session['selected_categories'] = categories_with_items
+                
+                # Генерируем образ
+                generated_items = generate_outfit_algorithm(request.user, categories_with_items)
+                
+                if not generated_items:
+                    messages.error(request, 'Не удалось создать образ')
+                    return redirect('wardrobe:generate_outfit')
+                
+                # Сохраняем сгенерированный образ в сессии
+                request.session['generated_outfit'] = {
+                    'item_ids': [item.id for item in generated_items],
+                    'categories': categories_with_items
+                }
+                
+                # Сбрасываем флаг оценки
+                if 'outfit_rated' in request.session:
+                    del request.session['outfit_rated']
+                if 'last_rating' in request.session:
+                    del request.session['last_rating']
+                
+                rating_form = RateOutfitForm()
+                
+                context = {
+                    'form': GenerateOutfitForm(initial={'categories': categories}),
+                    'rating_form': rating_form,
+                    'generated': True,
+                    'generated_items': generated_items,
+                    'recommendations': recommendations,
+                    'outfit_rated': False,
+                    'actual_categories': categories_with_items,
+                }
+                return render(request, 'wardrobe/generate_outfit.html', context)
+    
+    else:
+        # Если есть сохраненные категории, используем их
+        if saved_categories:
+            form = GenerateOutfitForm(initial={'categories': saved_categories})
+        else:
+            form = GenerateOutfitForm()
+    
+    context = {
+        'form': form,
+        'rating_form': rating_form,
+        'generated': has_generated_outfit,
+        'generated_items': generated_items,
+        'recommendations': recommendations,
+        'outfit_rated': outfit_rated,
+        'last_rating': last_rating,
+    }
+    return render(request, 'wardrobe/generate_outfit.html', context)
+
+@login_required
+def regenerate_outfit(request):
+    """Генерировать новый образ с теми же категориями"""
+    
+    saved_categories = request.session.get('selected_categories', [])
+    
+    if not saved_categories:
+        messages.error(request, 'Сначала выберите категории')
+        return redirect('wardrobe:generate_outfit')
+    
+    categories_with_items = []
+    for category in saved_categories:
+        count = ClothingItem.objects.filter(
+            user=request.user, 
+            category=category
+        ).count()
+        if count > 0:
+            categories_with_items.append(category)
+    
+    if len(categories_with_items) < 2:
+        messages.error(
+            request, 
+            'В сохраненных категориях недостаточно вещей. Выберите другие категории.'
+        )
+        return redirect('wardrobe:generate_outfit')
+    
+    generated_items = generate_outfit_algorithm(request.user, categories_with_items)
+    
+    if not generated_items:
+        messages.error(request, 'Не удалось создать образ')
+        return redirect('wardrobe:generate_outfit')
+    
+    # Обновляем сессию
+    request.session['generated_outfit'] = {
+        'item_ids': [item.id for item in generated_items],
+        'categories': categories_with_items
+    }
+    
+    # Сбрасываем флаг оценки
+    if 'outfit_rated' in request.session:
+        del request.session['outfit_rated']
+    if 'last_rating' in request.session:
+        del request.session['last_rating']
+    
+    rating_form = RateOutfitForm()
+    recommendations = get_recommendations(request.user)
+    form = GenerateOutfitForm(initial={'categories': saved_categories})
+    
+    context = {
+        'form': form,
+        'rating_form': rating_form,
+        'generated': True,
+        'generated_items': generated_items,
+        'recommendations': recommendations,
+        'outfit_rated': False,
+        'actual_categories': categories_with_items,
+    }
+    return render(request, 'wardrobe/generate_outfit.html', context)
+
+@login_required
+def rate_outfit(request):
+    """Оценить сгенерированный образ"""
+    
+    if request.method == 'POST' and 'generated_outfit' in request.session:
+        rating_form = RateOutfitForm(request.POST)
+        
+        if rating_form.is_valid():
+            rating = int(rating_form.cleaned_data['rating'])
+            outfit_data = request.session['generated_outfit']
+            item_ids = outfit_data['item_ids']
+            
+            # Получаем вещи
+            items = ClothingItem.objects.filter(id__in=item_ids, user=request.user)
+            
+            if len(items) != len(item_ids):
+                messages.error(request, 'Ошибка: некоторые вещи не найдены')
+                return redirect('wardrobe:generate_outfit')
+            
+            # Обновляем систему на основе оценки
+            update_compatibility_scores(request.user, items, rating)
+            
+            # Увеличиваем счетчики показов
+            for item in items:
+                item.times_shown += 1
+                item.save()
+            
+            # Балансировка для успешных образов
+            if rating >= 4:
+                for item in items:
+                    item.times_shown = max(0, item.times_shown - 1)
+                    item.save()
+            
+            messages.success(request, f'Спасибо за оценку {rating} ★! Система обучилась на ваших предпочтениях.')
+            
+            request.session['outfit_rated'] = True
+            request.session['last_rating'] = rating
+            
+            return redirect('wardrobe:generate_outfit')
+    
+    messages.error(request, 'Не удалось оценить образ')
+    return redirect('wardrobe:generate_outfit')
+
+
+def generate_outfit_algorithm(user, categories):
+    """Алгоритм генерации образов"""
+    
+    if len(categories) < 2:
+        return None
+    
+    # Сортируем категории в правильном порядке
+    category_order = {
+        'outer': 1,     # Верхняя одежда
+        'dress': 2,     # Костюм/Платье
+        'top': 3,       # Верх
+        'bottom': 4,    # Низ
+        'shoes': 5,     # Обувь
+        'accessory': 6  # Аксессуары
+    }
+    
+    # Сортируем категории по порядку
+    sorted_categories = sorted(categories, key=lambda x: category_order.get(x, 7))
+    
+    selected_items = []
+    
+    # Шаг 1: Выбор первой вещи (по рейтингу)
+    first_category = sorted_categories[0]
+    first_items = ClothingItem.objects.filter(user=user, category=first_category)
+    
+    if not first_items.exists():
+        return None
+    
+    # Вероятности по рейтингу
+    total_rating = sum(item.rating for item in first_items)
+    if total_rating == 0:
+        total_rating = len(first_items) * 3  # Средний рейтинг 3
+    
+    probabilities = [item.rating / total_rating for item in first_items]
+    
+    # Выбираем первую вещь
+    try:
+        first_item = random.choices(first_items, weights=probabilities)[0]
+    except:
+        first_item = random.choice(first_items)
+    
+    selected_items.append(first_item)
+    
+    # Шаг 2: Подбор остальных вещей в правильном порядке
+    for category in sorted_categories[1:]:
+        current_items = ClothingItem.objects.filter(user=user, category=category)
+        
+        if not current_items.exists():
+            # Если в категории нет вещей, пропускаем её
+            continue
+        
+        last_item = selected_items[-1]
+        weights = []
+        
+        for candidate in current_items:
+            # Получаем совместимость
+            compatibility = get_or_create_compatibility(user, last_item, candidate)
+            
+            # Рассчитываем вес по формуле: (рейтинг + 1) * (совместимость + 2) / (показов + 1)
+            weight = (candidate.rating + 1) * (compatibility + 2) / (candidate.times_shown + 1)
+            weights.append(weight)
+        
+        # С вероятностью 15% выбираем случайную вещь
+        if random.random() < 0.15 or sum(weights) == 0:
+            selected_item = random.choice(current_items)
+        else:
+            # Нормализуем веса
+            total_weight = sum(weights)
+            normalized_weights = [w / total_weight for w in weights]
+            selected_item = random.choices(current_items, weights=normalized_weights)[0]
+        
+        selected_items.append(selected_item)
+    
+    return selected_items
+
+def get_or_create_compatibility(user, item1, item2):
+    """Получает или создает запись о совместимости"""
+
+    if item1.id > item2.id:
+        item1, item2 = item2, item1
+    
+    compatibility, created = Compatibility.objects.get_or_create(
+        user=user,
+        item1=item1,
+        item2=item2,
+        defaults={'score': 0}
+    )
+    
+    return compatibility.score
+
+def update_compatibility_scores(user, items, rating):
+    """Обновляет оценки совместимости на основе рейтинга образа"""
+    
+    for i in range(len(items) - 1):
+        item1 = items[i]
+        item2 = items[i + 1]
+        
+        if item1.id > item2.id:
+            item1, item2 = item2, item1
+        
+        compatibility, created = Compatibility.objects.get_or_create(
+            user=user,
+            item1=item1,
+            item2=item2,
+            defaults={'score': 0, 'times_evaluated': 0}
+        )
+        
+        new_score = compatibility.score + (rating - 3) * 0.1
+        new_score = max(-1.0, min(1.0, new_score))
+        
+        compatibility.score = new_score
+        compatibility.times_evaluated += 1
+        compatibility.save()
+
+def get_recommendations(user):
+    """Генерирует рекомендации для пользователя"""
+    
+    recommendations = []
+    
+    # Проверяем количество вещей
+    total_items = ClothingItem.objects.filter(user=user).count()
+    
+    if total_items < 5:
+        recommendations.append(f"Добавьте больше вещей в гардероб (сейчас {total_items})")
+    elif total_items < 10:
+        recommendations.append("Добавьте ещё вещей для более разнообразных образов")
+    
+    # Проверяем несбалансированные категории
+    categories = ClothingItem.CATEGORY_CHOICES
+    for category_code, category_name in categories:
+        count = ClothingItem.objects.filter(user=user, category=category_code).count()
+        if count == 0:
+            recommendations.append(f"Добавьте вещи категории '{category_name}'")
+        elif count < 2 and total_items >= 10:
+            recommendations.append(f"Мало вещей категории '{category_name}' ({count} шт.)")
+    
+    # Проверяем оценки совместимости
+    compat_count = Compatibility.objects.filter(user=user).count()
+    if compat_count < 5:
+        recommendations.append("Оцените несколько образов для обучения системы")
+    
+    return recommendations

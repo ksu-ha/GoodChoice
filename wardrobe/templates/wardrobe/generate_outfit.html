@@ -1,0 +1,170 @@
+{% extends 'wardrobe/base.html' %}
+
+{% block title %}Генератор образов - GoodChoice{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Левая колонка: фильтры и рекомендации -->
+    <div class="col-lg-4">
+        <!-- Форма выбора категорий -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="bi bi-magic"></i> Генератор образов</h3>
+            </div>
+            
+            <div class="card-body">
+                <form method="post" id="generateForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="generate" value="true">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Выберите категории для образа:</label>
+                        <div class="border rounded p-3 bg-light">
+                            {% for value, label in form.fields.categories.choices %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" 
+                                       name="categories" value="{{ value }}" 
+                                       id="cat_{{ value }}"
+                                       {% if value in form.categories.value %}checked{% endif %}>
+                                <label class="form-check-label" for="cat_{{ value }}">
+                                    {{ label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.categories.errors %}
+                        <div class="text-danger small mt-2">
+                            {% for error in form.categories.errors %}
+                                <i class="bi bi-exclamation-circle"></i> {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-2">
+                        <i class="bi bi-stars"></i> Сгенерировать образ
+                    </button>
+                    
+                    {% if generated %}
+                    <a href="{% url 'wardrobe:regenerate_outfit' %}" class="btn btn-outline-primary w-100 py-2">
+                        <i class="bi bi-arrow-repeat"></i> Сгенерировать новый вариант
+                    </a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        
+        <!-- Рекомендации -->
+        {% if recommendations %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Рекомендации</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for rec in recommendations %}
+                    <li class="list-group-item py-2">
+                        <i class="bi bi-info-circle text-primary me-2"></i>
+                        <small>{{ rec }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Правая колонка: результат генерации -->
+    <div class="col-lg-8">
+        {% if generated %}
+        <div class="card mb-4" id="outfitDisplay">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Сгенерированный образ</h3>
+                    <div>
+                        {% if not outfit_rated %}
+                        <span class="badge bg-warning text-dark me-2">
+                            <i class="bi bi-exclamation-circle"></i> Оцените образ
+                        </span>
+                        {% else %}
+                        <span class="badge bg-success me-2">
+                            <i class="bi bi-check-circle"></i> Оценен: {{ last_rating }} ★
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- Отображение сгенерированных вещей -->
+                <div class="row">
+                    {% for item in generated_items %}
+                        {% include 'wardrobe/item_card.html' with item=item col_size='4' %}
+                    {% endfor %}
+                </div>
+                
+                <!-- Форма оценки -->
+                {% if rating_form and not outfit_rated %}
+                <div class="mt-4 pt-3 border-top">
+                    <form method="post" action="{% url 'wardrobe:rate_outfit' %}" id="ratingForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3"><i class="bi bi-star"></i> Оцените этот образ</h5>
+                            <p class="text-muted mb-3">Ваша оценка поможет системе лучше подбирать вещи для вас</p>
+                            
+                            <div class="d-flex justify-content-center gap-2">
+                                {% for value, label in rating_form.fields.rating.choices %}
+                                <div class="form-check">
+                                    <input type="radio" name="rating" value="{{ value }}" 
+                                           id="rating_{{ value }}" 
+                                           class="form-check-input" required>
+                                    <label for="rating_{{ value }}" class="form-check-label">
+                                        {{ label }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-check-circle"></i> Отправить оценку
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-stars display-4 text-muted mb-3"></i>
+                <h4>Генератор образов</h4>
+                <p class="text-muted mb-4">
+                    Выберите категории вещей слева и нажмите "Сгенерировать образ"
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ratingForm = document.getElementById('ratingForm');
+    if (ratingForm) {
+        ratingForm.addEventListener('submit', function(e) {
+            const checkedRating = this.querySelector('input[name="rating"]:checked');
+            
+            if (!checkedRating) {
+                e.preventDefault();
+                alert('Пожалуйста, оцените образ перед отправкой');
+                return false;
+            }
+        });
+    }
+</script>
+{% endblock %}
