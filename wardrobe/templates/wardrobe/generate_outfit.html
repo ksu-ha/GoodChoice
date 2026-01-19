@@ -117,10 +117,11 @@
                                 {% for value, label in rating_form.fields.rating.choices %}
                                 <div class="form-check">
                                     <input type="radio" name="rating" value="{{ value }}" 
-                                           id="rating_{{ value }}" 
-                                           class="form-check-input" required>
+                                        id="rating_{{ value }}" 
+                                        class="form-check-input" required>
                                     <label for="rating_{{ value }}" class="form-check-label">
-                                        {{ label }}
+                                        <i class="bi bi-star-fill"></i>
+                                        {{ value }}
                                     </label>
                                 </div>
                                 {% endfor %}

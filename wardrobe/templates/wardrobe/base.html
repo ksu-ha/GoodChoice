@@ -95,27 +95,28 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'wardrobe:home' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" 
+                        href="{% url 'wardrobe:home' %}">
                             <i class="bi bi-house"></i> Главная
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'wardrobe:wardrobe_list' %}">
-                            <i class="bi bi-closet"></i> Мой гардероб
+                        <a class="nav-link {% if request.resolver_match.url_name == 'wardrobe_list' %}active{% endif %}" href="{% url 'wardrobe:wardrobe_list' %}">
+                            <i class="bi bi-box-seam-fill"></i></i> Мой гардероб
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'wardrobe:outfit_list' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'outfit_list' %}active{% endif %}" href="{% url 'wardrobe:outfit_list' %}">
                             <i class="bi bi-stars"></i> Мои образы
                         </a>
                     </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'wardrobe:generate_outfit' %}">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'generate_outfit' %}active{% endif %}" href="{% url 'wardrobe:generate_outfit' %}">
                                 <i class="bi bi-magic"></i> Генератор образов
                             </a>
                         </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'wardrobe:analytics' %}">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" href="{% url 'wardrobe:analytics' %}">
                             <i class="bi bi-graph-up"></i> Аналитика
                         </a>
                     </li>
@@ -132,12 +133,12 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'wardrobe:login' %}">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'wardrobe:login' %}">
                                 <i class="bi bi-box-arrow-in-right"></i> Войти
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'wardrobe:register' %}">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'wardrobe:register' %}">
                                 <i class="bi bi-person-plus"></i> Регистрация
                             </a>
                         </li>
