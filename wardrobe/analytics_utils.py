@@ -148,47 +148,82 @@ def get_charts_data(user, ClothingItem):
     """Генерация данных для графиков"""
     items = ClothingItem.objects.filter(user=user)
     
-    # График распределения по цветам
+    # 1. График распределения по цветам
     color_data = items.values('color').annotate(count=Count('id')).order_by('-count')
     color_df = pd.DataFrame(list(color_data))
     
     if not color_df.empty:
+        color_mapping = dict(ClothingItem.COLOR_CHOICES)
+        color_df['color_rus'] = color_df['color'].map(color_mapping)
+        
         color_fig = px.pie(
             color_df, 
             values='count', 
-            names='color',
+            names='color_rus',
             title='Распределение вещей по цветам',
-            color_discrete_map={
-                'red': '#FF0000', 'blue': '#0000FF', 'green': '#00FF00',
-                'black': '#000000', 'white': '#FFFFFF', 'pink': '#FFC0CB',
-                'yellow': '#FFFF00', 'purple': '#800080', 'brown': '#A52A2A',
-                'gray': '#808080', 'beige': '#F5F5DC', 'multicolor': '#FF00FF'
-            }
+            color_discrete_sequence=px.colors.qualitative.Pastel
         )
-        color_fig.update_traces(textposition='inside', textinfo='percent+label')
+        color_fig.update_traces(
+            textposition='inside', 
+            textinfo='percent+label',
+            marker=dict(line=dict(color='white', width=1))
+        )
         color_chart = plot(color_fig, output_type='div')
     else:
         color_chart = None
     
-    # График распределения по категориям
+    # 2. График распределения по категориям
     category_data = items.values('category').annotate(count=Count('id')).order_by('-count')
     category_df = pd.DataFrame(list(category_data))
     
     if not category_df.empty:
+        category_mapping = dict(ClothingItem.CATEGORY_CHOICES)
+        category_df['category_rus'] = category_df['category'].map(category_mapping)
+        
         category_fig = px.bar(
             category_df,
-            x='category',
+            x='category_rus',
             y='count',
             title='Количество вещей по категориям',
-            labels={'category': 'Категория', 'count': 'Количество'},
-            color='count',
-            color_continuous_scale='blues'
+            color='category_rus',
+            color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        category_fig.update_layout(
+            xaxis_title='Категория',
+            yaxis_title='Количество вещей'
         )
         category_chart = plot(category_fig, output_type='div')
     else:
         category_chart = None
     
+    # 3. График бюджета по категориям
+    budget_chart = None
+    category_price_data = list(items.filter(price__isnull=False)
+        .values('category')
+        .annotate(total_price=Sum('price'), count=Count('id')))
+    
+    if category_price_data:
+        budget_df = pd.DataFrame(category_price_data)
+        if not budget_df.empty and budget_df['total_price'].sum() > 0:
+            category_mapping = dict(ClothingItem.CATEGORY_CHOICES)
+            budget_df['category_name'] = budget_df['category'].map(category_mapping)
+            
+            budget_fig = px.pie(
+                budget_df,
+                values='total_price',
+                names='category_name',
+                title='Распределение бюджета по категориям',
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            budget_fig.update_traces(
+                textposition='inside',
+                textinfo='percent+label',
+                marker=dict(line=dict(color='white', width=1))
+            )
+            budget_chart = plot(budget_fig, output_type='div')
+    
     return {
         'color_chart': color_chart,
         'category_chart': category_chart,
+        'budget_chart': budget_chart,
     }

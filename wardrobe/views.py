@@ -220,6 +220,7 @@ def analytics(request):
         # Графики
         'color_chart': charts_data['color_chart'],
         'category_chart': charts_data['category_chart'],
+        'budget_chart': charts_data['budget_chart']
     }
     return render(request, 'wardrobe/analytics.html', context)
 
