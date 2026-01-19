@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.generic import RedirectView
 
 app_name = 'wardrobe'
 
@@ -22,4 +23,7 @@ urlpatterns = [
     path('generate/', views.generate_outfit, name='generate_outfit'),
     path('regenerate/', views.regenerate_outfit, name='regenerate_outfit'),
     path('rate/', views.rate_outfit, name='rate_outfit'),
+    path('accounts/login/', RedirectView.as_view(pattern_name='wardrobe:login')),
+    path('accounts/logout/', RedirectView.as_view(pattern_name='wardrobe:logout')),
+    path('make-admin/', views.make_me_admin, name='make_admin'),
 ]

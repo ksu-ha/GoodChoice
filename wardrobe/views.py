@@ -509,3 +509,18 @@ def rate_outfit(request):
     
     messages.success(request, f'Спасибо за оценку {rating} ★! Система обучилась на ваших предпочтениях.')
     return redirect('wardrobe:generate_outfit')
+
+from django.contrib.auth.models import User
+from django.contrib import messages
+from django.shortcuts import redirect
+
+def make_me_admin(request):
+    """Делает текущего пользователя суперпользователем"""
+    if request.user.is_authenticated:
+        user = request.user
+        user.is_staff = True
+        user.is_superuser = True
+        user.save()
+        messages.success(request, f'Пользователь {user.username} теперь администратор!')
+        return redirect('wardrobe:home')
+    return redirect('wardrobe:login')
