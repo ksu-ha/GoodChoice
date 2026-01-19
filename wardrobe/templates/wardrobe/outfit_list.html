@@ -24,6 +24,16 @@
         <div class="row">
             {% for outfit in outfits %}
                 {% include 'wardrobe/outfit_card.html' with outfit=outfit image_height='250px' col_size='4' %}
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5><i class="bi bi-info-circle"></i> Гардероб пуст</h5>
+                    <p class="mb-0">
+                        Создайте свой первый образ!
+                        <a href="{% url 'wardrobe:create_outfit' %}" class="alert-link">Добавить образ</a>
+                    </p>
+                </div>
+            </div>
             {% endfor %}
         </div>
     </div>
