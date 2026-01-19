@@ -25,5 +25,4 @@ urlpatterns = [
     path('rate/', views.rate_outfit, name='rate_outfit'),
     path('accounts/login/', RedirectView.as_view(pattern_name='wardrobe:login')),
     path('accounts/logout/', RedirectView.as_view(pattern_name='wardrobe:logout')),
-    path('make-admin/', views.make_me_admin, name='make_admin'),
 ]
