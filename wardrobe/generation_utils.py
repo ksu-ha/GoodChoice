@@ -86,26 +86,33 @@ def generate_outfit_algorithm(user, categories):
 def update_compatibility_scores(user, items, rating):
     """Обновляет оценки совместимости на основе рейтинга образа"""
     
-    for i in range(len(items) - 1):
-        item1 = items[i]
-        item2 = items[i + 1]
-        
-        if item1.id > item2.id:
-            item1, item2 = item2, item1
-        
-        compatibility = Compatibility.objects.get_or_create(
-            user=user,
-            item1=item1,
-            item2=item2,
-            defaults={'score': 0, 'times_evaluated': 0}
-        )
-        
-        new_score = compatibility.score + (rating - 3) * 0.1
-        new_score = max(-1.0, min(1.0, new_score))
-        
-        compatibility.score = new_score
-        compatibility.times_evaluated += 1
-        compatibility.save()
+    items_list = list(items)
+    
+    for i in range(len(items_list) - 1):
+        for j in range(i + 1, len(items_list)):
+            item1 = items_list[i]
+            item2 = items_list[j]
+            
+            if item1.id > item2.id:
+                item1, item2 = item2, item1
+            
+            compat_tuple = Compatibility.objects.get_or_create(
+                user=user,
+                item1=item1,
+                item2=item2,
+                defaults={'score': 0.0, 'times_evaluated': 0}
+            )
+            
+            compat = compat_tuple[0]
+            
+            rating_delta = (rating - 3) * 0.1
+
+            new_score = compat.score + rating_delta
+            new_score = max(-1.0, min(1.0, new_score))
+            
+            compat.score = new_score
+            compat.times_evaluated += 1
+            compat.save()
 
 def get_recommendations(user):
     """Генерирует рекомендации для пользователя"""
